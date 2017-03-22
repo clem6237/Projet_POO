@@ -1,10 +1,24 @@
-/*
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
-*/
-/* 
-    Created on : 22 mars 2017, 11:16:10
-    Author     : Utilisateur
-*/
+body {
+    padding: 0px;
+    margin: 0px;
+}
+
+/* Design de la NavBar */
+#navbar {
+    position: relative;
+    background-color: #084277;
+    color: white;
+}
+#navbar > * {
+    display: inline-block;
+    padding: 10px 7px;
+    margin: 0px;
+}
+#navbar > div {
+    border-left: 1px solid white;
+}
+#navbar > div:hover {
+    background-color: #052748;
+    cursor: pointer;
+}
 

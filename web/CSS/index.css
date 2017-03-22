@@ -1,0 +1,16 @@
+#maps {
+    height: 200px;
+    border: 1px solid black;
+    margin: 5px;
+}
+
+#listCamions, #listClients {
+    display: inline-block;
+    width: 28%;
+    margin-left: 10%;
+    max-height: 150px;
+    overflow: auto;
+}
+#listClients {
+    margin-right: 10%;
+}
