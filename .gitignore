@@ -11,3 +11,6 @@ build/web/WEB-INF/classes/.netbeans_automatic_build
 Projet2017/dima/DistanceTimesCoordinates.csv
 Projet2017/dima/DistanceTimesData.csv
 build/*
+nbproject/private/private.properties
+nbproject/private/private.properties
+*.properties
