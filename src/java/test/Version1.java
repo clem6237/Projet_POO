@@ -34,7 +34,7 @@ public class Version1 {
     final String fileNameFleet = "small_normal/Fleet.csv";
     final String fileNameLocations = "small_normal/Locations.csv";
     final String fileNameSwapActions = "small_normal/SwapActions.csv";
-    final String fileNameSolutions = "small_normal/Solutions.csv";
+    final String fileNameSolutions = "small_normal/Solution.csv";
     
     Parameters parameters;
     List<Location> allLocations;
@@ -218,12 +218,12 @@ public class Version1 {
         List<Map<String, String>> mappedData = new ArrayList();
         Map<String, String> map = new HashMap();
         
-        double distanceTotal = this.getDistanceBewteenCoord(0, customer.getIdCoordinate()) 
-                + this.getDistanceBewteenCoord(customer.getIdCoordinate(), 0);
+        double distanceTotal = this.getDistanceBetweenCoord(0, customer.getIdCoordinate()) 
+                + this.getDistanceBetweenCoord(customer.getIdCoordinate(), 0);
         
         double timeTotal = customer.getServiceTime()
-                + this.getTimeBewteenCoord(0, customer.getIdCoordinate())
-                + this.getTimeBewteenCoord(customer.getIdCoordinate(), 0);
+                + this.getTimeBetweenCoord(0, customer.getIdCoordinate())
+                + this.getTimeBetweenCoord(customer.getIdCoordinate(), 0);
         
         Truck truck = new Truck();
         truck.setDistanceTravelled(distanceTotal);
@@ -338,7 +338,7 @@ public class Version1 {
         return mappedData;
     }
     
-    public double getDistanceBewteenCoord(int idCoordFrom, int idCoordTo) throws Exception
+    public double getDistanceBetweenCoord(int idCoordFrom, int idCoordTo) throws Exception
     {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameDistanceTime));
         String line = br.readLine();
@@ -366,7 +366,7 @@ public class Version1 {
         return 0;
     }
     
-    public double getTimeBewteenCoord(int idCoordFrom, int idCoordTo) throws Exception
+    public double getTimeBetweenCoord(int idCoordFrom, int idCoordTo) throws Exception
     {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameDistanceTime));
         String line = br.readLine();
