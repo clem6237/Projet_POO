@@ -1,24 +1,70 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package metier;
+
+import java.io.Serializable;
+import java.util.Objects;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author clementruffin
  */
-public class Route {
+@Entity
+@Table(name = "ROUTE", uniqueConstraints={
+   @UniqueConstraint(columnNames={"idTour", "position"})})
+@XmlRootElement
+public class Route implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JoinColumn(name = "IDTOUR", referencedColumnName = "ID")
+    @ManyToOne(optional = false)
     private int idTour;
+    
+    @Basic(optional = false)
+    @Column(name = "POSITION")
     private int position;
+    
+    @Basic(optional = false)
+    @Column(name = "LOCATION")
     private String location;
+    
+    @Basic(optional = false)
+    @Column(name = "LOCATIONTYPE")
     private LocationType locationType;
+    
+    @Basic(optional = false)
+    @Column(name = "TRAILERATTACHED")
     private boolean trailerAttached;
+    
+    @Basic(optional = false)
+    @Column(name = "FIRSTTRAILER")
     private int firstTrailer;
+    
+    @Basic(optional = false)
+    @Column(name = "LASTTRAILER")
     private int lastTrailer;
+    
+    @Basic(optional = false)
+    @Column(name = "SWAPACTION")
     private SwapAction swapAction;
+    
+    @Basic(optional = false)
+    @Column(name = "QTY1")
     private double qty1;
+    
+    @Basic(optional = false)
+    @Column(name = "QTY2")
     private double qty2;
 
     public Route() {
@@ -115,6 +161,39 @@ public class Route {
 
     public void setQty2(double qty2) {
         this.qty2 = qty2;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + this.idTour;
+        hash = 59 * hash + this.position;
+        hash = 59 * hash + Objects.hashCode(this.location);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Route other = (Route) obj;
+        if (this.idTour != other.idTour) {
+            return false;
+        }
+        if (this.position != other.position) {
+            return false;
+        }
+        if (!Objects.equals(this.location, other.location)) {
+            return false;
+        }
+        return true;
     }
 
     @Override

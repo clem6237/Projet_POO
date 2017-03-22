@@ -5,22 +5,18 @@
  */
 package test;
 
-import test.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import metier.Customer;
-import metier.Depot;
 import metier.Location;
 import metier.Parameters;
 import metier.SwapAction;
-import metier.SwapLocation;
 
 /**
  *
@@ -38,11 +34,13 @@ public class Version1 {
     
     Parameters parameters;
     List<Location> allLocations;
-    List<Depot> allDepots;
-    List<SwapLocation> allSwapLocations;
+    List<Location> allDepots;
+    List<Location> allSwapLocations;
     List<Customer> allCustomers;
     
+    int idCoordDepot;
     int nbTour = 1;
+    double totalCost = 0;
     
     public static void main(String[] args) throws Exception
     {
@@ -131,8 +129,8 @@ public class Version1 {
         String line = line = br.readLine();
         
         allLocations = new ArrayList<Location>();
-        allDepots = new ArrayList<Depot>();
-        allSwapLocations = new ArrayList<SwapLocation>();
+        allDepots = new ArrayList<Location>();
+        allSwapLocations = new ArrayList<Location>();
         allCustomers = new ArrayList<Customer>();
         
         while ((line = br.readLine()) != null)
@@ -142,15 +140,16 @@ public class Version1 {
             switch (data[0])
             {
                 case "DEPOT" :
-                    Depot depot = new Depot();
+                    Location depot = new Location();
                     depot.setId(data[1]);
                     depot.setPostalCode(data[2]);
                     depot.setCity(data[3]);
                     depot.setIdCoordinate(this.searchCoordinates(data[4], data[5]));
+                    idCoordDepot = depot.getIdCoordinate();
                     allDepots.add(depot);
                     break;
                 case "SWAP_LOCATION" :
-                    SwapLocation swapLocation = new SwapLocation();
+                    Location swapLocation = new Location();
                     swapLocation.setId(data[1]);
                     swapLocation.setPostalCode(data[2]);
                     swapLocation.setCity(data[3]);
@@ -207,9 +206,14 @@ public class Version1 {
         
         for (Customer customer : allCustomers)
         {
-            mappedData.addAll(this.processCustomerRequest(customer));
+            List<Map<String, String>> map = this.processCustomerRequest(customer);
+            if (map != null)
+            {
+                mappedData.addAll(map);
+            }
         }
         
+        System.out.println("TOTAL : " + totalCost);
         this.createSolutions(mappedData);
     }
     
@@ -218,12 +222,20 @@ public class Version1 {
         List<Map<String, String>> mappedData = new ArrayList();
         Map<String, String> map = new HashMap();
         
-        double distanceTotal = this.getDistanceBetweenCoord(0, customer.getIdCoordinate()) 
-                + this.getDistanceBetweenCoord(customer.getIdCoordinate(), 0);
+        double distanceTotal = this.getDistanceBetweenCoord(idCoordDepot, customer.getIdCoordinate()) 
+                + this.getDistanceBetweenCoord(customer.getIdCoordinate(), idCoordDepot);
         
-        double timeTotal = customer.getServiceTime()
-                + this.getTimeBetweenCoord(0, customer.getIdCoordinate())
-                + this.getTimeBetweenCoord(customer.getIdCoordinate(), 0);
+        double timeFrom = this.getTimeBetweenCoord(idCoordDepot, customer.getIdCoordinate());
+        double timeTo = this.getTimeBetweenCoord(customer.getIdCoordinate(), idCoordDepot);
+        double timeTotal = customer.getServiceTime() + timeFrom + timeTo;
+        
+        //System.out.println(customer.getId() + " - " + String.valueOf(timeFrom) + " / " + String.valueOf(timeTo));
+       
+        if (timeTotal > parameters.getOperatingTime())
+        {
+            System.out.println(customer.getId() + " - Livraison impossible (" + timeTotal + " / " + parameters.getOperatingTime() + ")");
+            return null;
+        }
         
         Truck truck = new Truck();
         truck.setDistanceTravelled(distanceTotal);
@@ -235,38 +247,27 @@ public class Version1 {
         {
             if (!customer.isAccessible())
             {
-                System.out.println(customer.getId() + " - Livraison impossible");
+                System.out.println(customer.getId() + " - Livraison impossible (quantité)");
                 return null;
             }
             else
             {
-                trailers = new Trailer[2];
+                trailers = new Trailer[1];
                 
                 Trailer trailer1 = new Trailer();
                 trailer1.setDistanceTravelled(distanceTotal);
                 trailer1.setTransitTime(timeTotal);
                 
-                Trailer trailer2 = new Trailer();
-                trailer2.setDistanceTravelled(distanceTotal);
-                trailer2.setTransitTime(timeTotal);
-                
                 trailers[0] = trailer1;
-                trailers[1] = trailer2;
             }
         }
         else
         {
-            trailers = new Trailer[1];
-            
-            Trailer trailer = new Trailer();
-            trailer.setDistanceTravelled(distanceTotal);
-            trailer.setTransitTime(timeTotal);
-            
-            trailers[0] = trailer;
+            trailers = new Trailer[0];
         }
         
         double coutTotal = calcTotalCost(truck, trailers);
-        
+        totalCost += coutTotal;
         /*Tour tour = new Tour(nbTour++);
         
         Route route1 = new Route();
@@ -289,16 +290,16 @@ public class Version1 {
         route2.setQty1(0);
         route2.setQty2(0);*/
         
-        //System.out.println(customer.getName() + " - Coût = " + String.valueOf(coutTotal));
+        System.out.println(customer.getId() + " - Coût = " + String.valueOf(coutTotal));
         
         map = new HashMap<String, String>();
         map.put("TOUR_ID", String.valueOf(nbTour));
         map.put("TOUR_POSITION", "1");
         map.put("LOCATION_ID", allLocations.get(0).getId());
         map.put("LOCATION_TYPE", "DEPOT");
-        map.put("SEMI_TRAILER_ATTACHED", trailers.length == 2 ? "1" : "0");
+        map.put("SEMI_TRAILER_ATTACHED", trailers.length == 1 ? "1" : "0");
         map.put("SWAP_BODY_TRUCK", "1");
-        map.put("SWAP_BODY_SEMI_TRAILER", trailers.length == 2 ? "2" : "0");
+        map.put("SWAP_BODY_SEMI_TRAILER", trailers.length == 1 ? "2" : "0");
         map.put("SWAP_ACTION", String.valueOf(SwapAction.NONE));
         map.put("SWAP_BODY_1_QUANTITY", "0");
         map.put("SWAP_BODY_2_QUANTITY", "0");
@@ -310,9 +311,9 @@ public class Version1 {
         map.put("TOUR_POSITION", "2");
         map.put("LOCATION_ID", customer.getId());
         map.put("LOCATION_TYPE", "CUSTOMER");
-        map.put("SEMI_TRAILER_ATTACHED", trailers.length == 2 ? "1" : "0");
+        map.put("SEMI_TRAILER_ATTACHED", trailers.length == 1 ? "1" : "0");
         map.put("SWAP_BODY_TRUCK", "1");
-        map.put("SWAP_BODY_SEMI_TRAILER", trailers.length == 2 ? "2" : "0");
+        map.put("SWAP_BODY_SEMI_TRAILER", trailers.length == 1 ? "2" : "0");
         map.put("SWAP_ACTION", String.valueOf(SwapAction.NONE));
         map.put("SWAP_BODY_1_QUANTITY", String.valueOf(customer.getOrderedQty() > parameters.getBodyCapacity() ? parameters.getBodyCapacity() : customer.getOrderedQty()));
         map.put("SWAP_BODY_2_QUANTITY", String.valueOf(customer.getOrderedQty() > parameters.getBodyCapacity() ? customer.getOrderedQty() - parameters.getBodyCapacity() : 0));
@@ -324,9 +325,9 @@ public class Version1 {
         map.put("TOUR_POSITION", "3");
         map.put("LOCATION_ID", allLocations.get(0).getId());
         map.put("LOCATION_TYPE", "DEPOT");
-        map.put("SEMI_TRAILER_ATTACHED", trailers.length == 2 ? "1" : "0");
+        map.put("SEMI_TRAILER_ATTACHED", trailers.length == 1 ? "1" : "0");
         map.put("SWAP_BODY_TRUCK", "1");
-        map.put("SWAP_BODY_SEMI_TRAILER", trailers.length == 2 ? "2" : "0");
+        map.put("SWAP_BODY_SEMI_TRAILER", trailers.length == 1 ? "2" : "0");
         map.put("SWAP_ACTION", String.valueOf(SwapAction.NONE));
         map.put("SWAP_BODY_1_QUANTITY", "0");
         map.put("SWAP_BODY_2_QUANTITY", "0");

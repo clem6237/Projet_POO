@@ -1,26 +1,65 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package metier;
+
+import java.io.Serializable;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author clementruffin
  */
-public class Parameters {
+@Entity
+@Table(name = "PARAMETERS")
+@XmlRootElement
+public class Parameters implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "ID")
+    private Integer id;
+    
+    @Column(name = "PARKTIME")
     private double parkTime;
+    
+    @Column(name = "SWAPTIME")
     private double swapTime;
+    
+    @Column(name = "EXCHANGETIME")
     private double exchangeTime;
+    
+    @Column(name = "PICKUPTIME")
     private double pickupTime;
+    
+    @Column(name = "TRUCKUSAGECOST")
     private double truckUsageCost;
+    
+    @Column(name = "TRUCKDISTANCECOST")
     private double truckDistanceCost;
+    
+    @Column(name = "TRUCKTIMECOST")
     private double truckTimeCost;
+    
+    @Column(name = "TRAILERUSAGECOST")
     private double trailerUsageCost;
+    
+    @Column(name = "TRAILERDISTANCECOST")
     private double trailerDistanceCost;
+    
+    @Column(name = "TRAILERTIMECOST")
     private double trailerTimeCost;
+    
+    @Column(name = "BODYCAPACITY")
     private double bodyCapacity;
+    
+    @Column(name = "OPERATINGTIME")
     private double operatingTime;
 
     public Parameters() {
@@ -139,6 +178,19 @@ public class Parameters {
 
     @Override
     public String toString() {
-        return "Parameters{" + "parkTime=" + parkTime + ", swapTime=" + swapTime + ", exchangeTime=" + exchangeTime + ", pickupTime=" + pickupTime + ", truckUsageCost=" + truckUsageCost + ", truckDistanceCost=" + truckDistanceCost + ", truckTimeCost=" + truckTimeCost + ", trailerUsageCost=" + trailerUsageCost + ", trailerDistanceCost=" + trailerDistanceCost + ", trailerTimeCost=" + trailerTimeCost + ", bodyCapacity=" + bodyCapacity + ", operatingTime=" + operatingTime + '}';
+        return "Parameters{" 
+                + "parkTime=" + parkTime 
+                + ", swapTime=" + swapTime 
+                + ", exchangeTime=" + exchangeTime 
+                + ", pickupTime=" + pickupTime 
+                + ", truckUsageCost=" + truckUsageCost 
+                + ", truckDistanceCost=" + truckDistanceCost 
+                + ", truckTimeCost=" + truckTimeCost 
+                + ", trailerUsageCost=" + trailerUsageCost 
+                + ", trailerDistanceCost=" + trailerDistanceCost 
+                + ", trailerTimeCost=" + trailerTimeCost 
+                + ", bodyCapacity=" + bodyCapacity 
+                + ", operatingTime=" + operatingTime 
+                + "}";
     }
 }
