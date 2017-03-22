@@ -10,3 +10,4 @@ build/web/WEB-INF/classes/.netbeans_automatic_build
 *.class
 Projet2017/dima/DistanceTimesCoordinates.csv
 Projet2017/dima/DistanceTimesData.csv
+build/*
