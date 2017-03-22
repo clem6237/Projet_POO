@@ -28,7 +28,7 @@ import metier.SwapLocation;
  */
 public class Version1 {
     
-    final String filePath = "/Users/clementruffin/NetBeansProjects/Projet2017/";
+    final String filePath = "Projet2017/";
     final String fileNameCoordinates = "dima/DistanceTimesCoordinates.csv";
     final String fileNameDistanceTime = "dima/DistanceTimesData.csv";
     final String fileNameFleet = "small_normal/Fleet.csv";
