@@ -1,5 +1,6 @@
 package test;
 
+import controleur.ImportBase;
 import dao.CoordinateDao;
 import dao.CustomerDao;
 import dao.DaoException;

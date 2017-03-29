@@ -1,4 +1,4 @@
-package test;
+package controleur;
 
 import dao.CoordinateDao;
 import dao.DaoFactory;
@@ -118,7 +118,7 @@ public class ImportBase {
         
         br.close();
         
-        this.importDistanceTime(coordinateManager);
+        //this.importDistanceTime(coordinateManager);
     }
     
     protected void importDistanceTime(CoordinateDao coordinateManager) throws Exception
