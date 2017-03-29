@@ -7,6 +7,9 @@ import dao.PersistenceType;
 import dao.RoutingParametersDao;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import metier.Coordinate;
 import metier.DistanceTime;
 import metier.RoutingParameters;
@@ -118,15 +121,16 @@ public class ImportBase {
         
         br.close();
         
-        //this.importDistanceTime(coordinateManager);
+        this.importDistanceTime(coordinateManager);
     }
     
-    protected void importDistanceTime(CoordinateDao coordinateManager) throws Exception
+    private void importDistanceTime(CoordinateDao coordinateManager) throws Exception
     {
         DistanceTimeDao distanceTimeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getDistanceTimeDao();
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameDistanceTime));
         String line = line = br.readLine();
         
+        Collection<DistanceTime> listDistanceTime = new ArrayList();
         int idCoordFrom = 1;
         double distance, time;
         
@@ -141,12 +145,14 @@ public class ImportBase {
                         Double.parseDouble(data[j]), 
                         Double.parseDouble(data[j+1]));
                 
-                distanceTimeManager.create(distanceTime);
+                listDistanceTime.add(distanceTime);
                 j++;
             }
             
             idCoordFrom++;
         }
+        
+        distanceTimeManager.createAll(listDistanceTime);
         
         br.close();
     }

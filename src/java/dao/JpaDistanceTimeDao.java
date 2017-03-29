@@ -1,6 +1,7 @@
 package dao;
 
 import java.util.Collection;
+import java.util.Date;
 import javax.persistence.Query;
 import metier.Coordinate;
 import metier.DistanceTime;
@@ -21,6 +22,23 @@ public class JpaDistanceTimeDao extends JpaDaoT<DistanceTime> implements Distanc
             instance = new JpaDistanceTimeDao(); 
         }
         return instance;
+    }
+    
+    @Override
+    public boolean createAll(Collection<DistanceTime> listDistanceTime) throws DaoException {
+        try {
+            et.begin();
+            
+            for (DistanceTime distanceTime : listDistanceTime) {
+                em.persist(distanceTime);
+            }
+            
+            et.commit();
+            
+            return true;
+        } catch (Exception e) {
+            throw new DaoException("Error during creation", e);
+        }
     }
     
     @Override
