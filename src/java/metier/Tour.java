@@ -1,6 +1,7 @@
 package metier;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -9,6 +10,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -20,6 +23,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @Table(name = "TOUR")
 @XmlRootElement
+@NamedQueries({
+    @NamedQuery(name = "Tour.findAll", query = "SELECT t FROM Tour t"),
+    @NamedQuery(name = "Tour.findById", query = "SELECT t FROM Tour t WHERE t.id = :id")
+})
 public class Tour implements Serializable {
     private static final long serialVersionUID = 1L;
     
@@ -29,14 +36,16 @@ public class Tour implements Serializable {
     @Column(name = "ID")
     private int id;
     
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idTour")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tour")
     private Collection<Route> listRoutes;
 
     public Tour() {
+        this.listRoutes = new ArrayList();
     }
 
-    public Tour(int id) {
+    public Tour(int id, Collection<Route> listRoutes) {
         this.id = id;
+        this.listRoutes = listRoutes;
     }
 
     public int getId() {

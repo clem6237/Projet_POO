@@ -1,12 +1,15 @@
 package metier;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -15,9 +18,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author clementruffin
  */
 @Entity
-@Table(name = "PARAMETERS")
+@Table(name = "ROUTINGPARAMETERS")
 @XmlRootElement
-public class Parameters implements Serializable {
+@NamedQueries({
+    @NamedQuery(name = "RoutingParameters.find", query = "SELECT rp FROM RoutingParameters rp")
+})
+public class RoutingParameters implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Id
@@ -62,10 +68,10 @@ public class Parameters implements Serializable {
     @Column(name = "OPERATINGTIME")
     private double operatingTime;
 
-    public Parameters() {
+    public RoutingParameters() {
     }
 
-    public Parameters(double parkTime, double swapTime, double exchangeTime, double pickupTime, double truckUsageCost, double truckDistanceCost, double truckTimeCost, double trailerUsageCost, double trailerDistanceCost, double trailerTimeCost, double bodyCapacity, double operatingTime) {
+    public RoutingParameters(double parkTime, double swapTime, double exchangeTime, double pickupTime, double truckUsageCost, double truckDistanceCost, double truckTimeCost, double trailerUsageCost, double trailerDistanceCost, double trailerTimeCost, double bodyCapacity, double operatingTime) {
         this.parkTime = parkTime;
         this.swapTime = swapTime;
         this.exchangeTime = exchangeTime;
@@ -174,6 +180,31 @@ public class Parameters implements Serializable {
 
     public void setOperatingTime(double operatingTime) {
         this.operatingTime = operatingTime;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 37 * hash + Objects.hashCode(this.id);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RoutingParameters other = (RoutingParameters) obj;
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        return true;
     }
 
     @Override

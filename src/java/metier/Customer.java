@@ -29,6 +29,13 @@ public class Customer extends Location implements Serializable {
     
     public Customer() {
     }
+
+    public Customer(String id, String postalCode, String city, Coordinate coordinate, LocationType type, double orderedQty, boolean accessible, double serviceTime) {
+        super(id, postalCode, city, coordinate, type);
+        this.orderedQty = orderedQty;
+        this.accessible = accessible;
+        this.serviceTime = serviceTime;
+    }
     
     public double getOrderedQty() {
         return orderedQty;
@@ -60,7 +67,7 @@ public class Customer extends Location implements Serializable {
                 + "id=" + this.getId() 
                 + ", postalCode=" + this.getPostalCode() 
                 + ", city=" + this.getCity() 
-                + ", idCoordinate=" + this.getIdCoordinate()
+                + ", coordinate=" + this.getCoordinate()
                 + ", orderedQty=" + orderedQty
                 + ", accessible=" + accessible
                 + ", serviceTime=" + serviceTime

@@ -5,10 +5,11 @@ import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -19,11 +20,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @Table(name = "LOCATION")
 @XmlRootElement
+@NamedQueries({
+    @NamedQuery(name = "Location.findAll", query = "SELECT l FROM Location l"),
+    @NamedQuery(name = "Location.findById", query = "SELECT l FROM Location l WHERE l.id = :id"),
+    @NamedQuery(name = "Location.findByCoord", query = "SELECT l FROM Location l WHERE l.coordinate = :coord")
+})
 public class Location implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "ID")
     private String id;
@@ -36,9 +41,9 @@ public class Location implements Serializable {
     @Column(name = "CITY")
     private String city;
     
+    @JoinColumn(name = "COORDINATE", referencedColumnName = "ID")
     @ManyToOne(optional = false)
-    @Column(name = "IDCOORDINATE")
-    private int idCoordinate;
+    private Coordinate coordinate;
     
     @Basic(optional = false)
     @Column(name = "TYPE")
@@ -47,11 +52,12 @@ public class Location implements Serializable {
     public Location() {
     }
 
-    public Location(String id, String postalCode, String city, int idCoordinate) {
+    public Location(String id, String postalCode, String city, Coordinate coordinate, LocationType type) {
         this.id = id;
         this.postalCode = postalCode;
         this.city = city;
-        this.idCoordinate = idCoordinate;
+        this.coordinate = coordinate;
+        this.type = type;
     }
 
     public String getId() {
@@ -78,12 +84,12 @@ public class Location implements Serializable {
         this.city = city;
     }
 
-    public int getIdCoordinate() {
-        return idCoordinate;
+    public Coordinate getCoordinate() {
+        return coordinate;
     }
 
-    public void setIdCoordinate(int idCoordinate) {
-        this.idCoordinate = idCoordinate;
+    public void setCoordinate(Coordinate coordinate) {
+        this.coordinate = coordinate;
     }    
 
     public LocationType getType() {
@@ -96,12 +102,8 @@ public class Location implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 67 * hash + Objects.hashCode(this.id);
-        hash = 67 * hash + Objects.hashCode(this.postalCode);
-        hash = 67 * hash + Objects.hashCode(this.city);
-        hash = 67 * hash + this.idCoordinate;
-        hash = 67 * hash + Objects.hashCode(this.type);
+        int hash = 7;
+        hash = 71 * hash + Objects.hashCode(this.id);
         return hash;
     }
 
@@ -117,19 +119,7 @@ public class Location implements Serializable {
             return false;
         }
         final Location other = (Location) obj;
-        if (this.idCoordinate != other.idCoordinate) {
-            return false;
-        }
         if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        if (!Objects.equals(this.postalCode, other.postalCode)) {
-            return false;
-        }
-        if (!Objects.equals(this.city, other.city)) {
-            return false;
-        }
-        if (this.type != other.type) {
             return false;
         }
         return true;
@@ -141,7 +131,7 @@ public class Location implements Serializable {
                 + "id=" + id 
                 + ", postalCode=" + postalCode 
                 + ", city=" + city 
-                + ", idCoordinate=" + idCoordinate 
+                + ", coordinate=" + coordinate 
                 + ", type=" + type
                 + " } \n";
     }

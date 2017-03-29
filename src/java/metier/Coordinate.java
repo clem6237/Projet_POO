@@ -4,9 +4,9 @@ import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -15,13 +15,17 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author clementruffin
  */
 @Entity
-@Table(name = "COORDINATES")
+@Table(name = "COORDINATE")
 @XmlRootElement
-public class Coordinates implements Serializable {
+@NamedQueries({
+    @NamedQuery(name = "Coordinate.findAll", query = "SELECT c FROM Coordinate c"),
+    @NamedQuery(name = "Coordinate.findById", query = "SELECT c FROM Coordinate c WHERE c.id = :id"),
+    @NamedQuery(name = "Coordinate.findByCoord", query = "SELECT c FROM Coordinate c WHERE c.coordX = :coordX AND c.coordY = :coordY")
+})
+public class Coordinate implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "ID")
     private int id;
@@ -34,10 +38,10 @@ public class Coordinates implements Serializable {
     @Column(name = "COORDY")
     private double coordY;
 
-    public Coordinates() {
+    public Coordinate() {
     }
 
-    public Coordinates(int id, double coordX, double coordY) {
+    public Coordinate(int id, double coordX, double coordY) {
         this.id = id;
         this.coordX = coordX;
         this.coordY = coordY;
@@ -70,9 +74,7 @@ public class Coordinates implements Serializable {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + this.id;
-        hash = 79 * hash + (int) (Double.doubleToLongBits(this.coordX) ^ (Double.doubleToLongBits(this.coordX) >>> 32));
-        hash = 79 * hash + (int) (Double.doubleToLongBits(this.coordY) ^ (Double.doubleToLongBits(this.coordY) >>> 32));
+        hash = 53 * hash + this.id;
         return hash;
     }
 
@@ -87,14 +89,8 @@ public class Coordinates implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Coordinates other = (Coordinates) obj;
+        final Coordinate other = (Coordinate) obj;
         if (this.id != other.id) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.coordX) != Double.doubleToLongBits(other.coordX)) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.coordY) != Double.doubleToLongBits(other.coordY)) {
             return false;
         }
         return true;

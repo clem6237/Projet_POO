@@ -5,11 +5,11 @@ import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -22,14 +22,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "ROUTE", uniqueConstraints={
    @UniqueConstraint(columnNames={"idTour", "position"})})
 @XmlRootElement
+@NamedQueries({
+    @NamedQuery(name = "Route.findAll", query = "SELECT r FROM Route r"),
+    @NamedQuery(name = "Route.findByTour", query = "SELECT r FROM Route r WHERE r.tour = :tour"),
+    @NamedQuery(name = "Route.findByTourPosition", query = "SELECT r FROM Route r WHERE r.tour = :tour AND r.position = :position")
+})
 public class Route implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JoinColumn(name = "IDTOUR", referencedColumnName = "ID")
+    @JoinColumn(name = "TOUR", referencedColumnName = "ID")
     @ManyToOne(optional = false)
-    private int idTour;
+    private Tour tour;
     
     @Basic(optional = false)
     @Column(name = "POSITION")
@@ -70,8 +74,8 @@ public class Route implements Serializable {
     public Route() {
     }
 
-    public Route(int idTour, int position, String location, LocationType locationType, boolean trailerAttached, int firstTrailer, int lastTrailer, SwapAction swapAction, double qty1, double qty2) {
-        this.idTour = idTour;
+    public Route(Tour tour, int position, String location, LocationType locationType, boolean trailerAttached, int firstTrailer, int lastTrailer, SwapAction swapAction, double qty1, double qty2) {
+        this.tour = tour;
         this.position = position;
         this.location = location;
         this.locationType = locationType;
@@ -83,12 +87,12 @@ public class Route implements Serializable {
         this.qty2 = qty2;
     }
 
-    public int getIdTour() {
-        return idTour;
+    public Tour getTour() {
+        return tour;
     }
 
-    public void setIdTour(int idTour) {
-        this.idTour = idTour;
+    public void setTour(Tour tour) {
+        this.tour = tour;
     }
 
     public int getPosition() {
@@ -165,10 +169,9 @@ public class Route implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 59 * hash + this.idTour;
-        hash = 59 * hash + this.position;
-        hash = 59 * hash + Objects.hashCode(this.location);
+        int hash = 3;
+        hash = 97 * hash + Objects.hashCode(this.tour);
+        hash = 97 * hash + this.position;
         return hash;
     }
 
@@ -184,13 +187,10 @@ public class Route implements Serializable {
             return false;
         }
         final Route other = (Route) obj;
-        if (this.idTour != other.idTour) {
-            return false;
-        }
         if (this.position != other.position) {
             return false;
         }
-        if (!Objects.equals(this.location, other.location)) {
+        if (!Objects.equals(this.tour, other.tour)) {
             return false;
         }
         return true;
@@ -199,7 +199,7 @@ public class Route implements Serializable {
     @Override
     public String toString() {
         return "Route { " 
-                + "idTour=" + idTour 
+                + "tour=" + tour 
                 + ", position=" + position 
                 + ", trailerAttached=" + trailerAttached 
                 + ", firstTrailer=" + firstTrailer 
