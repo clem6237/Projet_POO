@@ -1,7 +1,6 @@
 package dao;
 
 import java.util.Collection;
-import java.util.Date;
 import javax.persistence.Query;
 import metier.Coordinate;
 import metier.DistanceTime;

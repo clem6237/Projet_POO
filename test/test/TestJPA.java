@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package test;
 
 import dao.CoordinateDao;
@@ -16,8 +11,7 @@ import dao.RoutingParametersDao;
 import dao.TourDao;
 import metier.Coordinate;
 import metier.Customer;
-import metier.Location;
-import metier.LocationType;
+import metier.Depot;
 
 /**
  *
@@ -40,18 +34,13 @@ public class TestJPA {
         coordinateManager.deleteAll();
         routingParametersManager.deleteAll();
         
-        
-        
-        
-        
-        
         Coordinate c1 = new Coordinate(1, 2.5, 3.5);
         coordinateManager.create(c1);
         
-        Location loc1 = new Location("Depot", "59000", "LILLE", c1, LocationType.DEPOT);
-        locationManager.create(loc1);
+        Depot dep1 = new Depot("Depot", "59000", "LILLE", c1);
+        locationManager.create(dep1);
         
-        Customer cust1 = new Customer("Clement", "62300", "LENS", coordinateManager.findById(1), LocationType.CUSTOMER, 250, false, 500);
+        Customer cust1 = new Customer("Clement", "62300", "LENS", coordinateManager.findById(1), 250, false, 500);
         customerManager.create(cust1);
     }
 }

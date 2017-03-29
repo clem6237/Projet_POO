@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package test;
 
 import java.io.BufferedReader;
@@ -30,24 +25,20 @@ public class TestCosts {
     double trailerUsageCost;
     double bodyCapacity;
     
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         TestCosts test = new TestCosts();
         test.getFleetValues();
         test.scanCustomerRequests();        
     }
     
-    public void getFleetValues() throws Exception
-    {
+    public void getFleetValues() throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameFleet));
         String line = line = br.readLine();
         
-        while ((line = br.readLine()) != null)
-        {
+        while ((line = br.readLine()) != null) {
             String[] data = line.split(";");
 
-            switch (data[0])
-            {
+            switch (data[0]) {
                 case "TRUCK" :
                     truckDistanceCost = Double.parseDouble(data[2]);
                     truckTimeCost = Double.parseDouble(data[3]);
@@ -68,17 +59,14 @@ public class TestCosts {
         br.close();
     }
     
-    public void scanCustomerRequests() throws Exception
-    {
+    public void scanCustomerRequests() throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameLocations));
         String line = null;
         
-        while ((line = br.readLine()) != null)
-        {
+        while ((line = br.readLine()) != null) {
             String[] data = line.split(";");
 
-            if (data[0].equals("CUSTOMER"))
-            {
+            if (data[0].equals("CUSTOMER")) {
                 processCustomerRequest(data);
             }
         }
@@ -86,8 +74,7 @@ public class TestCosts {
         br.close();
     }
     
-    public void processCustomerRequest(String[] customerRequest) throws Exception
-    {
+    public void processCustomerRequest(String[] customerRequest) throws Exception {
         String customerName = customerRequest[1];
         String coordX = customerRequest[4];
         String coordY = customerRequest[5];
@@ -107,10 +94,8 @@ public class TestCosts {
         // Instanciation des remorques
         Trailer[] trailers = null;
         
-        if (orderedQty > bodyCapacity)
-        {
-            if (isAccessible == 1)
-            {
+        if (orderedQty > bodyCapacity) {
+            if (isAccessible == 1) {
                 trailers = new Trailer[2];
                 
                 Trailer trailer1 = new Trailer();
@@ -123,15 +108,11 @@ public class TestCosts {
                 
                 trailers[0] = trailer1;
                 trailers[1] = trailer2;
-            }
-            else
-            {
+            } else {
                 System.out.println(customerName + " - Livraison impossible");
                 return;
             }
-        }
-        else
-        {
+        } else {
             trailers = new Trailer[1];
             
             Trailer trailer = new Trailer();
@@ -147,18 +128,15 @@ public class TestCosts {
         System.out.println(customerName + " - Coût = " + String.valueOf(coutTotal));
     }
     
-    public int searchCoordinates(String coordX, String coordY) throws Exception
-    {
+    public int searchCoordinates(String coordX, String coordY) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameCoordinates));
         String line = br.readLine();
         int idCoord = 0;
         
-        while ((line = br.readLine()) != null)
-        {
+        while ((line = br.readLine()) != null) {
             String[] data = line.split(";");
 
-            if (data[0].equals(coordX) && data[1].equals(coordY))
-            {
+            if (data[0].equals(coordX) && data[1].equals(coordY)) {
                 return idCoord;
             }
             
@@ -170,8 +148,7 @@ public class TestCosts {
         return -1;
     }
     
-    public double[] getDistanceTimesDataDelivery(int idCoordFrom, int idCoordTo, double serviceTime) throws Exception
-    {
+    public double[] getDistanceTimesDataDelivery(int idCoordFrom, int idCoordTo, double serviceTime) throws Exception {
         double[] distanceTime = new double[2];
         
         double[] distanceTimeFrom = getDistanceTimesData(idCoordFrom, idCoordTo);
@@ -183,8 +160,7 @@ public class TestCosts {
         return distanceTime;
     }
     
-    public double[] getDistanceTimesData(int idCoordFrom, int idCoordTo) throws Exception
-    {
+    public double[] getDistanceTimesData(int idCoordFrom, int idCoordTo) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameDistanceTime));
         String line = br.readLine();
         
@@ -193,10 +169,8 @@ public class TestCosts {
         int jTime = 2 * idCoordTo + 1;
         double[] distanceTime = new double[2];
         
-        while ((line = br.readLine()) != null)
-        {
-            if (i == idCoordFrom)
-            {
+        while ((line = br.readLine()) != null) {
+            if (i == idCoordFrom) {
                 String[] data = line.split(";");
 
                 distanceTime[0] = Double.parseDouble(data[jDistance]);
@@ -213,8 +187,7 @@ public class TestCosts {
         return distanceTime;
     }
     
-    public double calcTotalCost(Truck truck, Trailer[] trailers)
-    {
+    public double calcTotalCost(Truck truck, Trailer[] trailers) {
         double total = 0;
         
         total += calcTruckCost(truck.getDistanceTravelled(), truck.getTransitTime());
@@ -226,15 +199,13 @@ public class TestCosts {
         return total;
     }
     
-    public double calcTruckCost(double distance, double time)
-    {
+    public double calcTruckCost(double distance, double time) {
         return truckUsageCost 
                 + (truckDistanceCost * (distance / 100)) 
                 + (truckTimeCost * (time / 3600));
     }
     
-    public double calcTrailerCost(double distance, double time)
-    {
+    public double calcTrailerCost(double distance, double time) {
         return trailerUsageCost 
                 + (trailerDistanceCost * (distance / 100)) 
                 + (trailerTimeCost * (time / 3600));

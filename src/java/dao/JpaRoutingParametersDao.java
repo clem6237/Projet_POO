@@ -1,6 +1,5 @@
 package dao;
 
-import java.util.Collection;
 import javax.persistence.Query;
 import metier.RoutingParameters;
 

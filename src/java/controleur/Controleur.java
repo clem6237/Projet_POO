@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package controleur;
 
 import java.io.IOException;
@@ -35,64 +30,76 @@ public class Controleur extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
         session = request.getSession();
         int nextPage = 1;
         
         String action = request.getParameter("action");
+        
         try (PrintWriter out = response.getWriter()) {
-            switch(action){
+            
+            switch(action) {
                 case "next" :
                     String vue = request.getParameter("vue");
-                    switch(vue){
+                    
+                    switch(vue) {
                         case "1" :
                             //Info de la page d'import 1
                             System.out.println("Page 1 OK");
-                            
                             nextPage = 2;
+                            
                             request.setAttribute("active", nextPage);
                             forward("/calcul.jsp", request, response);
                         break; 
+                        
                         case "2" :
                             //Info de la page d'import 2
                             System.out.println("Page 2 OK");
-                            
                             nextPage = 3;
+                            
                             request.setAttribute("active", nextPage);
                             forward("/calcul.jsp", request, response);
                         break;
+                        
                         default :
                             response.sendError(response.SC_BAD_REQUEST, "error");
                         break;
                     }
                 break; 
+                
                 case "previous" :
                     String vueP = request.getParameter("vue");
-                    switch(vueP){
+                    
+                    switch(vueP) {
                         case "2" :
                             //Info de la page d'import 2
                             System.out.println("Page 2 OK");
-                            
                             nextPage = 1;
+                            
                             request.setAttribute("active", nextPage);
                             forward("/calcul.jsp", request, response);
                         break; 
+                        
                         case "3" :
                             //Info de la page d'import 3
                             System.out.println("Page 3 OK");
-                            
                             nextPage = 2;
+                        
                             request.setAttribute("active", nextPage);
                             forward("/calcul.jsp", request, response);
                         break;
+                        
                         default :
                             response.sendError(response.SC_BAD_REQUEST, "error");
                         break;
                     }
                     break;
+                    
                 case "calcul" :
-                        //Info de la page d'import 3
-                        System.out.println("Page 3 OK");
-                    break;
+                    //Info de la page d'import 3
+                    System.out.println("Page 3 OK");
+                break;
+                
                 default :
                     response.sendError(response.SC_BAD_REQUEST, "error");
                 break;
@@ -124,7 +131,9 @@ public class Controleur extends HttpServlet {
         return "Short description";
     }
 
-    private void forward(String url, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void forward(String url, HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
         RequestDispatcher rd = request.getRequestDispatcher(url);
         rd.forward(request, response);
     }
