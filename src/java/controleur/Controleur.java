@@ -17,7 +17,7 @@ import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author Utilisateur
+ * @author Anais
  */
 @WebServlet(name = "controleur", urlPatterns = {"/Controleur"})
 public class Controleur extends HttpServlet {
@@ -76,10 +76,10 @@ public class Controleur extends HttpServlet {
                             String fleetFile = request.getParameter("fleet");
                             String swapActionFile = request.getParameter("swapActions");  
                             //Si un des fichiers est null, on reste sur la page
-                            if(fleetFile == ""  || swapActionFile == "") {
-                                if(fleetFile == "")
+                            if(fleetFile.equals("") || swapActionFile.equals("")) {
+                                if(fleetFile.equals(""))
                                     request.setAttribute("fleet", "error");
-                                if(swapActionFile == "")
+                                if(swapActionFile.equals(""))
                                     request.setAttribute("swapActions", "error");
                                 
                                 request.setAttribute("active", 2);

@@ -1,5 +1,6 @@
 package dao;
 
+import java.util.Collection;
 import javax.persistence.Query;
 import metier.Customer;
 
@@ -26,7 +27,7 @@ public class JpaCustomerDao extends JpaDaoT<Customer> implements CustomerDao {
         try {
             et.begin();
             
-            Query query = em.createNativeQuery("DELETE FROM Location WHERE Location.DType = 'Customer'");
+            Query query = em.createNativeQuery("DELETE FROM Location WHERE DType = 'Customer'");
             query.executeUpdate();
             
             et.commit();
@@ -35,5 +36,12 @@ public class JpaCustomerDao extends JpaDaoT<Customer> implements CustomerDao {
         } catch (Exception e) {
             throw new DaoException("Error during deleteAll", e);
         }
+    }
+    
+    @Override
+    public Collection findAll() {
+        Query query = em.createNamedQuery("Customer.findAll"); 
+        
+        return (Collection<Customer>) query.getResultList();
     }
 }

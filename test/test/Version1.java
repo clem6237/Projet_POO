@@ -38,8 +38,7 @@ public class Version1 {
     int nbTour = 1;
     double totalCost = 0;
     
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         Version1 test = new Version1();
         
         // Enregistrer les paramètres
@@ -52,24 +51,20 @@ public class Version1 {
         test.scanCustomerRequests();
     }
     
-    public void importParameters() throws Exception
-    {
+    public void importParameters() throws Exception {
         parameters = new RoutingParameters();
         this.importFleetFile();
         this.importSwapActionsFile();
     }
     
-    public void importFleetFile() throws Exception
-    {
+    public void importFleetFile() throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameFleet));
-        String line = line = br.readLine();
+        String line = br.readLine();
         
-        while ((line = br.readLine()) != null)
-        {
+        while ((line = br.readLine()) != null) {
             String[] data = line.split(";");
 
-            switch (data[0])
-            {
+            switch (data[0]) {
                 case "TRUCK" :
                     parameters.setTruckDistanceCost(Double.parseDouble(data[2]));
                     parameters.setTruckTimeCost(Double.parseDouble(data[3]));
@@ -90,17 +85,14 @@ public class Version1 {
         br.close();
     }
     
-    public void importSwapActionsFile() throws Exception
-    {
+    public void importSwapActionsFile() throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameSwapActions));
-        String line = line = br.readLine();
+        String line = br.readLine();
         
-        while ((line = br.readLine()) != null)
-        {
+        while ((line = br.readLine()) != null) {
             String[] data = line.split(";");
 
-            switch (data[0])
-            {
+            switch (data[0]) {
                 case "PARK" :
                     parameters.setParkTime(Double.parseDouble(data[1]));
                     break;
@@ -119,22 +111,19 @@ public class Version1 {
         br.close();
     }
     
-    public void importLocations() throws Exception
-    {
+    public void importLocations() throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameLocations));
-        String line = line = br.readLine();
+        String line = br.readLine();
         
         allLocations = new ArrayList<Location>();
         allDepots = new ArrayList<Location>();
         allSwapLocations = new ArrayList<Location>();
         allCustomers = new ArrayList<Customer>();
         
-        while ((line = br.readLine()) != null)
-        {
+        while ((line = br.readLine()) != null) {
             String[] data = line.split(";");
 
-            switch (data[0])
-            {
+            switch (data[0]) {
                 case "DEPOT" :
                     Location depot = new Location();
                     depot.setId(data[1]);
@@ -173,18 +162,15 @@ public class Version1 {
         allLocations.addAll(allCustomers);
     }
     
-    public Coordinate searchCoordinates(String coordX, String coordY) throws Exception
-    {
+    public Coordinate searchCoordinates(String coordX, String coordY) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameCoordinates));
         String line = br.readLine();
         int idCoord = 0;
         
-        while ((line = br.readLine()) != null)
-        {
+        while ((line = br.readLine()) != null) {
             String[] data = line.split(";");
 
-            if (data[0].equals(coordX) && data[1].equals(coordY))
-            {
+            if (data[0].equals(coordX) && data[1].equals(coordY)) {
                 return new Coordinate(idCoord, Double.parseDouble(coordX), Double.parseDouble(coordY));
             }
             
@@ -196,15 +182,13 @@ public class Version1 {
         return null;
     }
     
-    public void scanCustomerRequests() throws Exception
-    {
+    public void scanCustomerRequests() throws Exception {
         List<Map<String, String>> mappedData = new ArrayList();
         
-        for (Customer customer : allCustomers)
-        {
+        for (Customer customer : allCustomers) {
             List<Map<String, String>> map = this.processCustomerRequest(customer);
-            if (map != null)
-            {
+            
+            if (map != null) {
                 mappedData.addAll(map);
             }
         }
@@ -213,8 +197,7 @@ public class Version1 {
         this.createSolutions(mappedData);
     }
     
-    public List<Map<String, String>> processCustomerRequest(Customer customer) throws Exception
-    {
+    public List<Map<String, String>> processCustomerRequest(Customer customer) throws Exception {
         List<Map<String, String>> mappedData = new ArrayList();
         Map<String, String> map = new HashMap();
         
@@ -227,8 +210,7 @@ public class Version1 {
         
         //System.out.println(customer.getId() + " - " + String.valueOf(timeFrom) + " / " + String.valueOf(timeTo));
        
-        if (timeTotal > parameters.getOperatingTime())
-        {
+        if (timeTotal > parameters.getOperatingTime()) {
             System.out.println(customer.getId() + " - Livraison impossible (" + timeTotal + " / " + parameters.getOperatingTime() + ")");
             return null;
         }
@@ -239,15 +221,11 @@ public class Version1 {
         
         Trailer[] trailers = null;
         
-        if (customer.getOrderedQty() > parameters.getBodyCapacity())
-        {
-            if (!customer.isAccessible())
-            {
+        if (customer.getOrderedQty() > parameters.getBodyCapacity()) {
+            if (!customer.isAccessible()) {
                 System.out.println(customer.getId() + " - Livraison impossible (quantité)");
                 return null;
-            }
-            else
-            {
+            } else {
                 trailers = new Trailer[1];
                 
                 Trailer trailer1 = new Trailer();
@@ -256,9 +234,7 @@ public class Version1 {
                 
                 trailers[0] = trailer1;
             }
-        }
-        else
-        {
+        } else {
             trailers = new Trailer[0];
         }
         
@@ -335,8 +311,7 @@ public class Version1 {
         return mappedData;
     }
     
-    public double getDistanceBetweenCoord(int idCoordFrom, int idCoordTo) throws Exception
-    {
+    public double getDistanceBetweenCoord(int idCoordFrom, int idCoordTo) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameDistanceTime));
         String line = br.readLine();
         
@@ -344,10 +319,8 @@ public class Version1 {
         int j = 2 * idCoordTo;
         double distance;
         
-        while ((line = br.readLine()) != null)
-        {
-            if (i == idCoordFrom)
-            {
+        while ((line = br.readLine()) != null) {
+            if (i == idCoordFrom) {
                 String[] data = line.split(";");
 
                 distance = Double.parseDouble(data[j]);
@@ -363,8 +336,7 @@ public class Version1 {
         return 0;
     }
     
-    public double getTimeBetweenCoord(int idCoordFrom, int idCoordTo) throws Exception
-    {
+    public double getTimeBetweenCoord(int idCoordFrom, int idCoordTo) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameDistanceTime));
         String line = br.readLine();
         
@@ -372,10 +344,8 @@ public class Version1 {
         int j = 2 * idCoordTo + 1;
         double time;
         
-        while ((line = br.readLine()) != null)
-        {
-            if (i == idCoordFrom)
-            {
+        while ((line = br.readLine()) != null) {
+            if (i == idCoordFrom) {
                 String[] data = line.split(";");
 
                 time = Double.parseDouble(data[j]);
@@ -391,8 +361,7 @@ public class Version1 {
         return 0;
     }
     
-    public double calcTotalCost(Truck truck, Trailer[] trailers)
-    {
+    public double calcTotalCost(Truck truck, Trailer[] trailers) {
         double total = 0;
         
         total += calcTruckCost(truck.getDistanceTravelled(), truck.getTransitTime());
@@ -404,22 +373,19 @@ public class Version1 {
         return total;
     }
     
-    public double calcTruckCost(double distance, double time)
-    {
+    public double calcTruckCost(double distance, double time) {
         return parameters.getTruckUsageCost()
                 + (parameters.getTruckDistanceCost() * (distance / 100)) 
                 + (parameters.getTruckTimeCost() * (time / 3600));
     }
     
-    public double calcTrailerCost(double distance, double time)
-    {
+    public double calcTrailerCost(double distance, double time) {
         return parameters.getTrailerUsageCost()
                 + (parameters.getTrailerDistanceCost() * (distance / 100)) 
                 + (parameters.getTrailerTimeCost() * (time / 3600));
     }
     
-    public void createSolutions(List<Map<String, String>> mappedData) throws Exception
-    {
+    public void createSolutions(List<Map<String, String>> mappedData) throws Exception {
         String[] titles = { 
             "TOUR_ID", 
             "TOUR_POSITION", 
@@ -436,15 +402,13 @@ public class Version1 {
         writeSolutions(mappedData, titles);
     }
     
-    public void writeSolutions(List<Map<String, String>> mappedData, String[] titles) throws Exception
-    {
+    public void writeSolutions(List<Map<String, String>> mappedData, String[] titles) throws Exception {
         FileWriter fw = new FileWriter(filePath + fileNameSolutions);
         BufferedWriter bw = new BufferedWriter(fw);
         
         boolean first = true;
         
         for (String title : titles) {
-            
             if (first) {
                 first = false;
             } else {

@@ -24,6 +24,23 @@ public class JpaDistanceTimeDao extends JpaDaoT<DistanceTime> implements Distanc
     }
     
     @Override
+    public boolean createAll(Collection<DistanceTime> listDistanceTime) throws DaoException {
+        try {
+            et.begin();
+            
+            for (DistanceTime distanceTime : listDistanceTime) {
+                em.persist(distanceTime);
+            }
+            
+            et.commit();
+            
+            return true;
+        } catch (Exception e) {
+            throw new DaoException("Error during creation", e);
+        }
+    }
+    
+    @Override
     public boolean deleteAll() throws DaoException {
         try {
             et.begin();

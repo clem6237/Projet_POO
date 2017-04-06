@@ -10,6 +10,8 @@ public abstract class DaoFactory {
     public abstract CoordinateDao getCoordinateDao();
     public abstract DistanceTimeDao getDistanceTimeDao();
     public abstract LocationDao getLocationDao();
+    public abstract DepotDao getDepotDao();
+    public abstract SwapLocationDao getSwapLocationDao();
     public abstract CustomerDao getCustomerDao();
     public abstract TourDao getTourDao();
     public abstract RouteDao getRouteDao();

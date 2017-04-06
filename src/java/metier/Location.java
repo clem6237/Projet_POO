@@ -45,19 +45,14 @@ public class Location implements Serializable {
     @ManyToOne(optional = false)
     private Coordinate coordinate;
     
-    @Basic(optional = false)
-    @Column(name = "TYPE")
-    private LocationType type;
-    
     public Location() {
     }
 
-    public Location(String id, String postalCode, String city, Coordinate coordinate, LocationType type) {
+    public Location(String id, String postalCode, String city, Coordinate coordinate) {
         this.id = id;
         this.postalCode = postalCode;
         this.city = city;
         this.coordinate = coordinate;
-        this.type = type;
     }
 
     public String getId() {
@@ -90,15 +85,7 @@ public class Location implements Serializable {
 
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
-    }    
-
-    public LocationType getType() {
-        return type;
-    }
-
-    public void setType(LocationType type) {
-        this.type = type;
-    }
+    }   
 
     @Override
     public int hashCode() {
@@ -132,7 +119,6 @@ public class Location implements Serializable {
                 + ", postalCode=" + postalCode 
                 + ", city=" + city 
                 + ", coordinate=" + coordinate 
-                + ", type=" + type
                 + " } \n";
     }
 }

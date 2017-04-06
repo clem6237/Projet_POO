@@ -27,6 +27,16 @@ public class DaoFactoryJpa extends DaoFactory {
     }
 
     @Override
+    public DepotDao getDepotDao() {
+        return JpaDepotDao.getInstance();
+    }
+    
+    @Override
+    public SwapLocationDao getSwapLocationDao() {
+        return JpaSwapLocationDao.getInstance();
+    }
+    
+    @Override
     public CustomerDao getCustomerDao() {
         return JpaCustomerDao.getInstance();
     }

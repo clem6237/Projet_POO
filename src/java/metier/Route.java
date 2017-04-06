@@ -5,6 +5,8 @@ import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -20,7 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @Table(name = "ROUTE", uniqueConstraints={
-   @UniqueConstraint(columnNames={"idTour", "position"})})
+   @UniqueConstraint(columnNames={"tour", "position"})})
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Route.findAll", query = "SELECT r FROM Route r"),
@@ -31,6 +33,11 @@ public class Route implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "ID")
+    private int id;
+    
     @JoinColumn(name = "TOUR", referencedColumnName = "ID")
     @ManyToOne(optional = false)
     private Tour tour;
@@ -39,9 +46,9 @@ public class Route implements Serializable {
     @Column(name = "POSITION")
     private int position;
     
-    @Basic(optional = false)
-    @Column(name = "LOCATION")
-    private String location;
+    @JoinColumn(name = "LOCATION", referencedColumnName = "ID")
+    @ManyToOne(optional = false)
+    private Location location;
     
     @Basic(optional = false)
     @Column(name = "LOCATIONTYPE")
@@ -74,7 +81,7 @@ public class Route implements Serializable {
     public Route() {
     }
 
-    public Route(Tour tour, int position, String location, LocationType locationType, boolean trailerAttached, int firstTrailer, int lastTrailer, SwapAction swapAction, double qty1, double qty2) {
+    public Route(Tour tour, int position, Location location, LocationType locationType, boolean trailerAttached, int firstTrailer, int lastTrailer, SwapAction swapAction, double qty1, double qty2) {
         this.tour = tour;
         this.position = position;
         this.location = location;
@@ -99,11 +106,11 @@ public class Route implements Serializable {
         return position;
     }
 
-    public String getLocation() {
+    public Location getLocation() {
         return location;
     }
 
-    public void setLocation(String location) {
+    public void setLocation(Location location) {
         this.location = location;
     }
 
@@ -199,7 +206,7 @@ public class Route implements Serializable {
     @Override
     public String toString() {
         return "Route { " 
-                + "tour=" + tour 
+                //+ "tour=" + tour 
                 + ", position=" + position 
                 + ", trailerAttached=" + trailerAttached 
                 + ", firstTrailer=" + firstTrailer 

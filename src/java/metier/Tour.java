@@ -3,6 +3,7 @@ package metier;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -31,7 +32,7 @@ public class Tour implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @Basic(optional = false)
     @Column(name = "ID")
     private int id;
@@ -43,8 +44,7 @@ public class Tour implements Serializable {
         this.listRoutes = new ArrayList();
     }
 
-    public Tour(int id, Collection<Route> listRoutes) {
-        this.id = id;
+    public Tour(Collection<Route> listRoutes) {
         this.listRoutes = listRoutes;
     }
 
@@ -67,7 +67,8 @@ public class Tour implements Serializable {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + this.id;
+        hash = 59 * hash + this.id;
+        hash = 59 * hash + Objects.hashCode(this.listRoutes);
         return hash;
     }
 
