@@ -183,6 +183,7 @@ public class Version2 {
             "TOUR_ID", 
             "TOUR_POSITION", 
             "LOCATION_ID", 
+            "LOCATION_TYPE",
             "SEMI_TRAILER_ATTACHED",
             "SWAP_BODY_TRAILER",
             "SWAP_BODY_SEMI_TRAILER",
@@ -207,20 +208,29 @@ public class Version2 {
         
         Collection<Route> listRoutes = routeManager.findAll();
         
+        int nbTour = 0;
+        Tour lastTour = null;
+        
         for (Route route : listRoutes) {
             first = true;
-           
             String value = "";
             
-            value += "R" + route.getTour().getId() + ";";
+            Tour tour = route.getTour();
+            if (!tour.equals(lastTour)) {
+                nbTour++;
+                lastTour = tour;
+            }
+            
+            value += "R" + (nbTour) + ";";
             value += route.getPosition() + ";";
             value += route.getLocation().getId() + ";";
+            value += route.getLocationType().name() + ";";
             value += (route.isTrailerAttached() ? "1" : "0") + ";";
             value += route.getFirstTrailer() + ";";
             value += route.getLastTrailer() + ";";
             value += route.getSwapAction() + ";";
             value += route.getQty1() + ";";
-            value += route.getQty2() + ";";
+            value += route.getQty2();
             
             write(value, bw);
             bw.write("\n");    

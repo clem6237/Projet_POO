@@ -6,3 +6,14 @@ build.xml
 build/*
 *.properties
 *.class
+build/web/WEB-INF/classes/metier/Customer.class
+
+build/web/WEB-INF/classes/metier/Depot.class
+
+build/web/WEB-INF/classes/metier/Location.class
+
+build/web/WEB-INF/classes/metier/Route.class
+
+build/web/WEB-INF/classes/metier/SwapLocation.class
+
+build/web/WEB-INF/classes/metier/Tour.class

@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
    @UniqueConstraint(columnNames={"tour", "position"})})
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Route.findAll", query = "SELECT r FROM Route r"),
+    @NamedQuery(name = "Route.findAll", query = "SELECT r FROM Route r ORDER BY r.tour, r.position ASC"),
     @NamedQuery(name = "Route.findByTour", query = "SELECT r FROM Route r WHERE r.tour = :tour"),
     @NamedQuery(name = "Route.findByTourPosition", query = "SELECT r FROM Route r WHERE r.tour = :tour AND r.position = :position")
 })
