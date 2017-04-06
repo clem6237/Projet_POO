@@ -7,6 +7,8 @@ package controleur;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import utils.ImportBase;
 
 /**
  *
@@ -58,11 +61,11 @@ public class Controleur extends HttpServlet {
                             
                             //Récupére les infos de la page
                             String coordinatesFile = request.getParameter("coordinates");
-                            if(coordinatesFile.equals(""))
+                            if(!coordinatesFile.equals(""))
                                 session.setAttribute(ATT_SESSION_COORDINATES_FILE, coordinatesFile);
                             
                             String distancesFile = request.getParameter("distances");      
-                            if(distancesFile.equals(""))
+                            if(!distancesFile.equals(""))
                                 session.setAttribute(ATT_SESSION_DISTANCES_FILE, distancesFile);
                             
                             //Passe à la page suivante
@@ -136,19 +139,21 @@ public class Controleur extends HttpServlet {
                         String locationsFile = request.getParameter("locations");  
                         //Si le fichier est null, on reste sur la page
                         if(locationsFile.equals("")) {
-                           request.setAttribute("locations", "error");
+                            request.setAttribute("locations", "error");
                             request.setAttribute("active", 3);
                             forward("/calcul.jsp", request, response);
                         } else {
                             session.setAttribute(ATT_SESSION_LOCATIONS_FILE, locationsFile);
                             //On lance le calcul
-                            
+                            this.importFiles();
                         }
                     break;
                 default :
                     response.sendError(response.SC_BAD_REQUEST, "error");
                 break;
             }
+        } catch (Exception ex) {
+            Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -181,4 +186,25 @@ public class Controleur extends HttpServlet {
         rd.forward(request, response);
     }
     
+    public void importFiles() throws Exception {
+        if (!ATT_SESSION_FLEET_FILE.isEmpty()) {
+            ImportBase.importFleetFile(ATT_SESSION_FLEET_FILE);
+        }
+        
+        if (!ATT_SESSION_SWAPACTIONS_FILE.isEmpty()) {
+            ImportBase.importSwapActionsFile(ATT_SESSION_SWAPACTIONS_FILE);
+        }
+        
+        if (!ATT_SESSION_COORDINATES_FILE.isEmpty()) {
+            ImportBase.importCoordinates(ATT_SESSION_COORDINATES_FILE);
+        }
+        
+        if (!ATT_SESSION_DISTANCES_FILE.isEmpty()) {
+            ImportBase.importDistanceTime(ATT_SESSION_DISTANCES_FILE);
+        }
+        
+        if (!ATT_SESSION_LOCATIONS_FILE.isEmpty()) {
+            ImportBase.importLocations(ATT_SESSION_LOCATIONS_FILE);
+        }
+    }
 }
