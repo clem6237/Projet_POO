@@ -1,6 +1,5 @@
 package test;
 
-import utils.ImportBase;
 import dao.CoordinateDao;
 import dao.CustomerDao;
 import dao.DaoException;
@@ -26,6 +25,7 @@ import metier.RoutingParameters;
 import metier.SwapAction;
 import metier.Tour;
 import utils.CoordinatesCalc;
+import utils.ImportBase;
 import utils.Utils;
 
 /**
@@ -35,6 +35,12 @@ import utils.Utils;
 public class Version2 {
     
     static String filePath = "Projet2017/";
+    static String fileNameFleet = "small_normal/Fleet.csv";
+    static String fileNameSwapActions = "small_normal/SwapActions.csv";
+    static String fileNameCoordinates = "dima/DistanceTimesCoordinates.csv";
+    static String fileNameDistanceTime = "dima/DistanceTimesData.csv";
+    static String fileNameLocations = "small_normal/Locations.csv";
+    
     final String fileNameSolutions = "small_normal/Solution.csv";
     
     RoutingParametersDao parametersManager;
@@ -54,10 +60,11 @@ public class Version2 {
         test.initialize();
         
         // Importation des paramètres, coordonnées & emplacements
-        ImportBase importBase = new ImportBase(filePath);
-        importBase.importParameters();
-        //importBase.importCoordinates();
-        importBase.importLocations();
+        ImportBase.importFleetFile(filePath + fileNameFleet);
+        ImportBase.importSwapActionsFile(filePath + fileNameSwapActions);
+        //ImportBase.importCoordinates(filePath + fileNameCoordinates);
+        //ImportBase.importDistanceTime(filePath + fileNameDistanceTime);
+        ImportBase.importLocations(filePath + fileNameLocations);
         
         // Algorithme de création des tournées
         test.scanCustomerRequests();

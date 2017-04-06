@@ -1,5 +1,6 @@
 package dao;
 
+import java.util.List;
 import javax.persistence.Query;
 import metier.RoutingParameters;
 
@@ -41,7 +42,13 @@ public class JpaRoutingParametersDao extends JpaDaoT<RoutingParameters> implemen
     public RoutingParameters find() {
         Query query = em.createNamedQuery("RoutingParameters.find"); 
         
-        return (RoutingParameters) query.getSingleResult();
+        List<RoutingParameters> list = query.getResultList();
+        
+        if (list.size() > 0) {
+            return list.get(0);
+        } else {
+            return new RoutingParameters();
+        }
     }
 
     

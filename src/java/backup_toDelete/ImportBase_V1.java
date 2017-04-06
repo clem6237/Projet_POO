@@ -1,4 +1,4 @@
-package utils;
+package backup_toDelete;
 
 import dao.CoordinateDao;
 import dao.CustomerDao;
@@ -17,18 +17,37 @@ import metier.Depot;
 import metier.DistanceTime;
 import metier.RoutingParameters;
 import metier.SwapLocation;
+import utils.Utils;
 
 /**
  *
  * @author clementruffin
  */
-public class ImportBase {
+public class ImportBase_V1 {
+    final String filePath;
+    final String fileNameFleet = "small_normal/Fleet.csv";
+    final String fileNameSwapActions = "small_normal/SwapActions.csv";
+    final String fileNameCoordinates = "dima/DistanceTimesCoordinates.csv";
+    final String fileNameDistanceTime = "dima/DistanceTimesData.csv";
+    final String fileNameLocations = "small_normal/Locations.csv";
     
-    public static void importFleetFile(String fileName) throws Exception {
+    public ImportBase_V1(String filePath) {
+        this.filePath = filePath;
+    }
+    
+    public void importParameters() throws Exception {
         RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
-        RoutingParameters routingParameters = parametersManager.find();
+        RoutingParameters routingParameters = new RoutingParameters();
         
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        this.importFleetFile(routingParameters);
+        this.importSwapActionsFile(routingParameters);
+        
+        parametersManager.create(routingParameters);
+        Utils.log("Import Paramètres OK");
+    }
+    
+    private void importFleetFile(RoutingParameters routingParameters) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameFleet));
         String line = br.readLine();
         
         while ((line = br.readLine()) != null) {
@@ -53,16 +72,10 @@ public class ImportBase {
         }
         
         br.close();
-        parametersManager.create(routingParameters);
-        
-        Utils.log("Import <Flotte> OK");
     }
     
-    public static void importSwapActionsFile(String fileName) throws Exception {
-        RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
-        RoutingParameters routingParameters = parametersManager.find();
-        
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+    private void importSwapActionsFile(RoutingParameters routingParameters) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameSwapActions));
         String line = br.readLine();
         
         while ((line = br.readLine()) != null) {
@@ -85,15 +98,12 @@ public class ImportBase {
         }
         
         br.close();
-        parametersManager.create(routingParameters);
-        
-        Utils.log("Import <Swap Actions> OK");
     }
     
-    public static void importCoordinates(String fileName) throws Exception {
+    public void importCoordinates() throws Exception {
         CoordinateDao coordinateManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCoordinateDao();
         
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameCoordinates));
         String line = br.readLine();
         
         int idCoord = 1;
@@ -107,16 +117,17 @@ public class ImportBase {
             idCoord++;
         }
         
+        Utils.log("Import Coordonnées OK");
+        
         br.close();
         
-        Utils.log("Import <Coordonnées> OK");
+        this.importDistanceTime(coordinateManager);
     }
     
-    public static void importDistanceTime(String fileName) throws Exception {
+    private void importDistanceTime(CoordinateDao coordinateManager) throws Exception {
         DistanceTimeDao distanceTimeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getDistanceTimeDao();
-        CoordinateDao coordinateManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCoordinateDao();
         
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameDistanceTime));
         String line = br.readLine();
         
         Collection<DistanceTime> listDistanceTime = new ArrayList();
@@ -140,18 +151,19 @@ public class ImportBase {
             idCoordFrom++;
         }
         
-        br.close();
         distanceTimeManager.createAll(listDistanceTime);
         
-        Utils.log("Import <Distances/Temps> OK");
+        Utils.log("Import Mapping OK");
+        
+        br.close();
     }
     
-    public static void importLocations(String fileName) throws Exception {
+    public void importLocations() throws Exception {
         LocationDao locationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getLocationDao();
         CustomerDao customerManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCustomerDao();
         CoordinateDao coordinateManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCoordinateDao();
         
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        BufferedReader br = new BufferedReader(new FileReader(filePath + fileNameLocations));
         String line = br.readLine();
         
         while ((line = br.readLine()) != null) {
@@ -188,8 +200,8 @@ public class ImportBase {
             }
         }
         
-        br.close();
+        Utils.log("Import Emplacements OK");
         
-        Utils.log("Import <Emplacements> OK");
+        br.close();
     }
 }
