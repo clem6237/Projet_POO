@@ -5,3 +5,4 @@ nbproject/project.properties
 build.xml
 build/*
 *.properties
+*.class
