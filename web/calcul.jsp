@@ -36,7 +36,7 @@
         <div class="collapse navbar-collapse" id="navbar-ex-collapse">
           <ul class="nav navbar-nav">
             <li class="active">
-              <a href="#">Nouveau Calcul</a>
+              <a href="Controleur?action=previous&vue=2">Nouveau Calcul</a>
             </li>            
             <li>
               <a href="Controleur?action=export">Exporter en CSV</a>
