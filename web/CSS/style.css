@@ -6816,3 +6816,29 @@ body {
 .localisation > .active {
     background-color: #085394;
 }
+
+input[type="file"] {
+	width: calc(100% - 10px);
+ 	border-radius:5px;	
+ 	box-shadow: none;
+ 	background-color:#ecf0f1;
+ 	margin:8px 0px 8px 0px;
+   	padding:5px;
+   	border: solid 1px #ccc;
+   	font-size:15px;
+}
+input[type="file"].error {
+	width: calc(100% - 10px);
+ 	border-radius:5px;	
+ 	box-shadow: none;
+        border: 1px solid red;
+ 	background-color:#ecf0f1;
+ 	margin:8px 0px 8px 0px;
+   	padding:5px;
+   	font-size:15px;
+}
+
+#error {
+    color: red;
+    float:right;
+}

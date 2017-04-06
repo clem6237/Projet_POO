@@ -36,7 +36,7 @@
         <div class="collapse navbar-collapse" id="navbar-ex-collapse">
           <ul class="nav navbar-nav">
             <li class="active">
-              <a href="calcul.html">Nouveau Calcul</a>
+              <a href="#">Nouveau Calcul</a>
             </li>
           </ul>
         </div>
