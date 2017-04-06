@@ -183,9 +183,8 @@ public class Version2 {
             "TOUR_ID", 
             "TOUR_POSITION", 
             "LOCATION_ID", 
-            "LOCATION_TYPE",
             "SEMI_TRAILER_ATTACHED",
-            "SWAP_BODY_TRUCK",
+            "SWAP_BODY_TRAILER",
             "SWAP_BODY_SEMI_TRAILER",
             "SWAP_ACTION",
             "SWAP_BODY_1_QUANTITY",
@@ -213,11 +212,10 @@ public class Version2 {
            
             String value = "";
             
-            value += route.getTour().getId() + ";";
+            value += "R" + route.getTour().getId() + ";";
             value += route.getPosition() + ";";
             value += route.getLocation().getId() + ";";
-            value += route.getLocationType().name() + ";";
-            value += route.isTrailerAttached() + ";";
+            value += (route.isTrailerAttached() ? "1" : "0") + ";";
             value += route.getFirstTrailer() + ";";
             value += route.getLastTrailer() + ";";
             value += route.getSwapAction() + ";";
