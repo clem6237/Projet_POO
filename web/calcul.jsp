@@ -37,6 +37,9 @@
           <ul class="nav navbar-nav">
             <li class="active">
               <a href="#">Nouveau Calcul</a>
+            </li>            
+            <li>
+              <a href="Controleur?action=export">Exporter en CSV</a>
             </li>
           </ul>
         </div>

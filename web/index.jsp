@@ -30,6 +30,9 @@
             <li>
               <a href="calcul.jsp">Nouveau Calcul</a>
             </li>
+            <li>
+              <a href="Controleur?action=export">Exporter en CSV</a>
+            </li>
           </ul>
         </div>
       </div>

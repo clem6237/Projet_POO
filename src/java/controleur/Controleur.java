@@ -45,6 +45,9 @@ public class Controleur extends HttpServlet {
         String action = request.getParameter("action");
         try (PrintWriter out = response.getWriter()) {
             switch(action){
+                case "export":
+                    System.out.println("Exporter la solution");
+                    break;
                 case "next" :
                     String vue = request.getParameter("vue");
                     switch(vue){
@@ -55,11 +58,11 @@ public class Controleur extends HttpServlet {
                             
                             //Récupére les infos de la page
                             String coordinatesFile = request.getParameter("coordinates");
-                            if(coordinatesFile != null)
+                            if(coordinatesFile.equals(""))
                                 session.setAttribute(ATT_SESSION_COORDINATES_FILE, coordinatesFile);
                             
                             String distancesFile = request.getParameter("distances");      
-                            if(distancesFile != null)
+                            if(distancesFile.equals(""))
                                 session.setAttribute(ATT_SESSION_DISTANCES_FILE, distancesFile);
                             
                             //Passe à la page suivante
@@ -75,6 +78,7 @@ public class Controleur extends HttpServlet {
                             //Récupére les infos de la page
                             String fleetFile = request.getParameter("fleet");
                             String swapActionFile = request.getParameter("swapActions");  
+                            
                             //Si un des fichiers est null, on reste sur la page
                             if(fleetFile.equals("") || swapActionFile.equals("")) {
                                 if(fleetFile.equals(""))
@@ -131,7 +135,7 @@ public class Controleur extends HttpServlet {
                         //Récupére les infos de la page
                         String locationsFile = request.getParameter("locations");  
                         //Si le fichier est null, on reste sur la page
-                        if(locationsFile == "" ) {
+                        if(locationsFile.equals("")) {
                            request.setAttribute("locations", "error");
                             request.setAttribute("active", 3);
                             forward("/calcul.jsp", request, response);
