@@ -3,17 +3,8 @@ package controleur;
 import dao.CoordinateDao;
 import dao.DaoFactory;
 import dao.PersistenceType;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import metier.Coordinate;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -391,7 +381,7 @@ public class Controleur extends HttpServlet {
         String fileNameLocations = (String) session.getAttribute(ATT_SESSION_LOCATIONS_FILE);
         
         try {
-        
+            
             ImportBase.importParametersFromWeb(
                     files.get(ATT_SESSION_FLEET_FILE), 
                     files.get(ATT_SESSION_SWAPACTIONS_FILE));
