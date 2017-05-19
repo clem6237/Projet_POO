@@ -39,7 +39,7 @@
             <div class="localisation">
                 <div></div> <div></div> <div class="active"></div>
             </div>
-            <form id="send" action="Controleur" method="GET">
+            <form id="send" action="Controleur" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="vue" value="3"/>
                 <input type="hidden" name="action" value="calcul" />
                 <div class="container">

@@ -1,33 +1,31 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package controleur;
 
 import dao.CoordinateDao;
 import dao.DaoFactory;
 import dao.PersistenceType;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.Iterator;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
 import metier.Coordinate;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
@@ -51,6 +49,8 @@ public class Controleur extends HttpServlet {
     HttpSession session;
     
     private final String UPLOAD_DIRECTORY = "files";
+    private final int TAILLE_TAMPON = 10240;
+    private final Map<String, FileItem> files = new HashMap<>();
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -63,7 +63,7 @@ public class Controleur extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         session = request.getSession();
-        int nextPage = 1;
+        int nextPage;
         
         String action = request.getParameter("action");
         try (PrintWriter out = response.getWriter()) {
@@ -74,7 +74,7 @@ public class Controleur extends HttpServlet {
                 case "next" :
                     String vue = request.getParameter("vue");
                     switch(vue){
-                        case "1" :  
+                        case "1" : 
                             //On initialise le donnée de cette page en session
                             session.removeAttribute(ATT_SESSION_COORDINATES_FILE);
                             session.removeAttribute(ATT_SESSION_DISTANCES_FILE);
@@ -123,7 +123,7 @@ public class Controleur extends HttpServlet {
                             }
                         break;
                         default :
-                            response.sendError(response.SC_BAD_REQUEST, "error");
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
                         break;
                     }
                 break; 
@@ -147,7 +147,7 @@ public class Controleur extends HttpServlet {
                             forward("/calcul.jsp", request, response);
                         break;
                         default :
-                            response.sendError(response.SC_BAD_REQUEST, "error");
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
                         break;
                     }
                     break;
@@ -169,7 +169,7 @@ public class Controleur extends HttpServlet {
                         }
                     break;
                 default :
-                    response.sendError(response.SC_BAD_REQUEST, "error");
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
                 break;
             }
         } catch (Exception ex) {
@@ -188,38 +188,184 @@ public class Controleur extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
 
-        // process only if its multipart content
-        if (isMultipart) {
-            // Create a factory for disk-based file items
-            FileItemFactory factory = new DiskFileItemFactory();
+        session = request.getSession();
+        int nextPage;
+        
+        String action = "", vue = "";
+        String coordinatesFile = "", distancesFile = "";
+        String fleetFile = "", swapActionFile = "";  
+        String locationsFile = "";
+        
+        try {
+            List<FileItem> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
+        
+            for (FileItem item : items) {
+                if (item.isFormField()) {
+                    String fieldName = item.getFieldName();
+                    String fieldValue = item.getString();
 
-            // Create a new file upload handler
-            ServletFileUpload upload = new ServletFileUpload(factory);
-            try {
-                // Parse the request
-                List<FileItem> multiparts = upload.parseRequest(request);
-
-                for (FileItem item : multiparts) {
-                    if (!item.isFormField()) {
-                        String name = new File(item.getName()).getName();
-                        String filepath = UPLOAD_DIRECTORY + File.separator + name;
-                        item.write(new File(UPLOAD_DIRECTORY + File.separator + name));
+                    switch (fieldName) {
+                        case "action":
+                            action = fieldValue;
+                            break;
+                        case "vue":
+                            vue = fieldValue;
+                            break;
+                    }
+                    
+                } else {
+                    String fieldName = item.getFieldName();
+                    String fieldValue = item.getName();
+                    
+                    switch (fieldName) {
+                        case "coordinates":
+                            coordinatesFile = fieldValue;
+                            break;
+                        case "distances":
+                            distancesFile = fieldValue;
+                            break;
+                        case ATT_SESSION_FLEET_FILE:
+                            fleetFile = fieldValue;
+                            files.put(ATT_SESSION_FLEET_FILE, item);
+                            break;
+                        case ATT_SESSION_SWAPACTIONS_FILE:
+                            swapActionFile = fieldValue;
+                            files.put(ATT_SESSION_SWAPACTIONS_FILE, item);
+                            break;
+                        case ATT_SESSION_LOCATIONS_FILE:
+                            locationsFile = fieldValue;
+                            files.put(ATT_SESSION_LOCATIONS_FILE, item);
+                            break;
                     }
                 }
-
-                // File uploaded successfully
-                request.setAttribute("message", "Your file has been uploaded!");
-            } catch (Exception e) {
-             request.setAttribute("message", "File Upload Failed due to " + e);
             }
-        } else {
-            request.setAttribute("message", "This Servlet only handles file upload request");
+        } catch (FileUploadException ex) {
+            Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
+                
+        //String action = request.getParameter("action");
         
-        request.getRequestDispatcher("/result.jsp").forward(request, response);
-        
+        try (PrintWriter out = response.getWriter()) {
+            
+            switch(action){
+            
+                case "export":
+                    System.out.println("Exporter la solution");
+                    break;
+                
+                case "next" :
+                    //String vue = request.getParameter("vue");
+                    
+                    switch(vue){
+                    
+                        case "1" : 
+                            //On initialise le donnée de cette page en session
+                            session.removeAttribute(ATT_SESSION_COORDINATES_FILE);
+                            session.removeAttribute(ATT_SESSION_DISTANCES_FILE);
+                            
+                            //Récupére les infos de la page
+                            //String coordinatesFile = request.getParameter("coordinates");
+                            if(coordinatesFile != null && !coordinatesFile.equals("") )
+                                session.setAttribute(ATT_SESSION_COORDINATES_FILE, coordinatesFile);
+                            
+                            //String distancesFile = request.getParameter("distances");      
+                            if(distancesFile != null && !distancesFile.equals(""))
+                                session.setAttribute(ATT_SESSION_DISTANCES_FILE, distancesFile);
+                            
+                            //Passe à la page suivante
+                            nextPage = 2;
+                            request.setAttribute("active", nextPage);
+                            forward("/calcul.jsp", request, response);
+                        break; 
+                        
+                        case "2" : 
+                            //On initialise le donnée de cette page en session
+                            session.removeAttribute(ATT_SESSION_FLEET_FILE);
+                            session.removeAttribute(ATT_SESSION_SWAPACTIONS_FILE);
+                            
+                            //Récupére les infos de la page
+                            //String fleetFile = request.getParameter("fleet");
+                            //String swapActionFile = request.getParameter("swapActions");  
+                            
+                            //Si un des fichiers est null, on reste sur la page
+                            if(fleetFile.equals("") || swapActionFile.equals("")) {
+                                if(fleetFile.equals(""))
+                                    request.setAttribute("fleet", "error");
+                                if(swapActionFile.equals(""))
+                                    request.setAttribute("swapActions", "error");
+                                
+                                request.setAttribute("active", 2);
+                                forward("/calcul.jsp", request, response);
+                            } else {
+                                //On enregistre les fichiers en session
+                                session.setAttribute(ATT_SESSION_FLEET_FILE, fleetFile);
+                                session.setAttribute(ATT_SESSION_SWAPACTIONS_FILE, swapActionFile);
+                                
+                                //On passe à la page suivante
+                                nextPage = 3;
+                                request.setAttribute("active", nextPage);
+                                forward("/calcul.jsp", request, response);
+                            }
+                        break;
+                        
+                        default :
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
+                        break;
+                    }
+                break; 
+                
+                case "previous" :
+                    String vueP = request.getParameter("vue");
+                    switch(vueP){
+                        case "2" :
+                            //Info de la page d'import 2
+                            System.out.println("Prev: Page 2 OK");
+                            
+                            nextPage = 1;
+                            request.setAttribute("active", nextPage);
+                            forward("/calcul.jsp", request, response);
+                        break; 
+                        case "3" :
+                            //Info de la page d'import 3
+                            System.out.println("Prev: Page 3 OK");
+                            
+                            nextPage = 2;
+                            request.setAttribute("active", nextPage);
+                            forward("/calcul.jsp", request, response);
+                        break;
+                        default :
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
+                        break;
+                    }
+                break;
+                    
+                case "calcul" :
+                        //On initialise le donnée de cette page en session
+                        session.removeAttribute(ATT_SESSION_LOCATIONS_FILE);
+                        
+                        //Récupére les infos de la page
+                        //String locationsFile = request.getParameter("locations");  
+                        //Si le fichier est null, on reste sur la page
+                        if(locationsFile.equals("")) {
+                            request.setAttribute("locations", "error");
+                            request.setAttribute("active", 3);
+                            forward("/calcul.jsp", request, response);
+                        } else {
+                            session.setAttribute(ATT_SESSION_LOCATIONS_FILE, locationsFile);
+                            
+                            //On lance le calcul
+                            this.importFiles(request, response);
+                        }
+                break;
+                    
+                default :
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
+                break;
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -243,8 +389,18 @@ public class Controleur extends HttpServlet {
         String fileNameCoordinates = (String) session.getAttribute(ATT_SESSION_COORDINATES_FILE);
         String fileNameDistanceTime = (String) session.getAttribute(ATT_SESSION_DISTANCES_FILE);
         String fileNameLocations = (String) session.getAttribute(ATT_SESSION_LOCATIONS_FILE);
-
+        
         try {
+        
+            ImportBase.importParametersFromWeb(
+                    files.get(ATT_SESSION_FLEET_FILE), 
+                    files.get(ATT_SESSION_SWAPACTIONS_FILE));
+            
+        } catch (Exception ex) {
+            Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        /*try {
             if (fileNameFleet != null && !fileNameFleet.equals("") && fileNameSwapActions != null && !fileNameSwapActions.equals("")) {
                 ImportBase.importParameters(fileNameFleet, fileNameSwapActions);
             }
@@ -263,7 +419,7 @@ public class Controleur extends HttpServlet {
             
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
     }
     
     private void getCoordinates() {

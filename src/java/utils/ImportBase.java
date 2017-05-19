@@ -1,5 +1,6 @@
 package utils;
 
+import controleur.Controleur;
 import dao.CoordinateDao;
 import dao.CustomerDao;
 import dao.DaoException;
@@ -8,22 +9,30 @@ import dao.DistanceTimeDao;
 import dao.LocationDao;
 import dao.PersistenceType;
 import dao.RoutingParametersDao;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import metier.Coordinate;
 import metier.Customer;
 import metier.Depot;
 import metier.DistanceTime;
 import metier.RoutingParameters;
 import metier.SwapLocation;
+import org.apache.commons.fileupload.FileItem;
 
 /**
  *
  * @author clementruffin
  */
 public class ImportBase {
+    private static int TAILLE_TAMPON = 10240;
     
     public static void importParameters(String fileNameFleet, String fileNameSwapActions) throws Exception {
         RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
@@ -31,14 +40,43 @@ public class ImportBase {
         
         RoutingParameters routingParameters = new RoutingParameters();
         
-        ImportBase.importFleetFile(routingParameters, fileNameFleet);
-        ImportBase.importSwapActionsFile(routingParameters, fileNameSwapActions);
+        ImportBase.importFleetFile(routingParameters, fileNameFleet, null);
+        ImportBase.importSwapActionsFile(routingParameters, fileNameSwapActions, null);
+        
+        parametersManager.create(routingParameters);
+    }
+    
+    public static void importParametersFromWeb(FileItem fleet, FileItem swapActions) throws Exception {
+        RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
+        parametersManager.deleteAll();
+        RoutingParameters routingParameters = new RoutingParameters();
+        
+        try {
+            InputStream contentFleet = fleet.getInputStream();
+            InputStream contentSwapActions = swapActions.getInputStream();
+            
+            BufferedInputStream inputFleet = new BufferedInputStream(contentFleet, TAILLE_TAMPON);
+            BufferedInputStream inputSwapActions = new BufferedInputStream(contentSwapActions, TAILLE_TAMPON);
+            
+            ImportBase.importFleetFile(routingParameters, "", inputFleet);
+            ImportBase.importSwapActionsFile(routingParameters, "", inputSwapActions);
+            
+        } catch (Exception ex) {
+            Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         parametersManager.create(routingParameters);
     }
 
-    public static void importFleetFile(RoutingParameters routingParameters, String fileNameFleet) throws Exception {
-        BufferedReader br = new BufferedReader(new FileReader(fileNameFleet));
+    public static void importFleetFile(RoutingParameters routingParameters, String fileNameFleet, BufferedInputStream input) throws Exception {
+        BufferedReader br;
+        
+        if (!fileNameFleet.equals("")) {
+            br = new BufferedReader(new FileReader(fileNameFleet));
+        } else {
+            br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        }
+        
         String line = br.readLine();
         
         while ((line = br.readLine()) != null) {
@@ -67,8 +105,15 @@ public class ImportBase {
         Utils.log("Import <Flotte> OK");
     }
     
-    public static void importSwapActionsFile(RoutingParameters routingParameters, String fileNameSwapActions) throws Exception {
-        BufferedReader br = new BufferedReader(new FileReader(fileNameSwapActions));
+    public static void importSwapActionsFile(RoutingParameters routingParameters, String fileNameSwapActions, BufferedInputStream input) throws Exception {
+        BufferedReader br;
+        
+        if (!fileNameSwapActions.equals("")) {
+            br = new BufferedReader(new FileReader(fileNameSwapActions));
+        } else {
+            br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        }
+        
         String line = br.readLine();
         
         while ((line = br.readLine()) != null) {
