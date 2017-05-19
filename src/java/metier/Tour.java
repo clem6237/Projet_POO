@@ -68,7 +68,6 @@ public class Tour implements Serializable {
     public int hashCode() {
         int hash = 7;
         hash = 59 * hash + this.id;
-        hash = 59 * hash + Objects.hashCode(this.listRoutes);
         return hash;
     }
 

@@ -60,8 +60,7 @@ public class Version2 {
         test.initialize();
         
         // Importation des paramètres, coordonnées & emplacements
-        ImportBase.importFleetFile(filePath + fileNameFleet);
-        ImportBase.importSwapActionsFile(filePath + fileNameSwapActions);
+        ImportBase.importParameters(filePath + fileNameFleet, filePath + fileNameSwapActions);
         //ImportBase.importCoordinates(filePath + fileNameCoordinates);
         //ImportBase.importDistanceTime(filePath + fileNameDistanceTime);
         ImportBase.importLocations(filePath + fileNameLocations);

@@ -8,19 +8,32 @@ package controleur;
 import dao.CoordinateDao;
 import dao.DaoFactory;
 import dao.PersistenceType;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 import metier.Coordinate;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import utils.ImportBase;
 
 /**
@@ -36,6 +49,8 @@ public class Controleur extends HttpServlet {
     public static final String ATT_SESSION_LOCATIONS_FILE = "locations";
     
     HttpSession session;
+    
+    private final String UPLOAD_DIRECTORY = "files";
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -66,11 +81,11 @@ public class Controleur extends HttpServlet {
                             
                             //Récupére les infos de la page
                             String coordinatesFile = request.getParameter("coordinates");
-                            if(!coordinatesFile.equals(""))
+                            if(coordinatesFile != null && !coordinatesFile.equals("") )
                                 session.setAttribute(ATT_SESSION_COORDINATES_FILE, coordinatesFile);
                             
                             String distancesFile = request.getParameter("distances");      
-                            if(!distancesFile.equals(""))
+                            if(distancesFile != null && !distancesFile.equals(""))
                                 session.setAttribute(ATT_SESSION_DISTANCES_FILE, distancesFile);
                             
                             //Passe à la page suivante
@@ -150,7 +165,7 @@ public class Controleur extends HttpServlet {
                         } else {
                             session.setAttribute(ATT_SESSION_LOCATIONS_FILE, locationsFile);
                             //On lance le calcul
-                            this.importFiles();
+                            this.importFiles(request, response);
                         }
                     break;
                 default :
@@ -173,6 +188,37 @@ public class Controleur extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+
+        // process only if its multipart content
+        if (isMultipart) {
+            // Create a factory for disk-based file items
+            FileItemFactory factory = new DiskFileItemFactory();
+
+            // Create a new file upload handler
+            ServletFileUpload upload = new ServletFileUpload(factory);
+            try {
+                // Parse the request
+                List<FileItem> multiparts = upload.parseRequest(request);
+
+                for (FileItem item : multiparts) {
+                    if (!item.isFormField()) {
+                        String name = new File(item.getName()).getName();
+                        String filepath = UPLOAD_DIRECTORY + File.separator + name;
+                        item.write(new File(UPLOAD_DIRECTORY + File.separator + name));
+                    }
+                }
+
+                // File uploaded successfully
+                request.setAttribute("message", "Your file has been uploaded!");
+            } catch (Exception e) {
+             request.setAttribute("message", "File Upload Failed due to " + e);
+            }
+        } else {
+            request.setAttribute("message", "This Servlet only handles file upload request");
+        }
+        
+        request.getRequestDispatcher("/result.jsp").forward(request, response);
         
     }
 
@@ -191,25 +237,32 @@ public class Controleur extends HttpServlet {
         rd.forward(request, response);
     }
     
-    public void importFiles() throws Exception {
-        if (!ATT_SESSION_FLEET_FILE.isEmpty()) {
-            ImportBase.importFleetFile(ATT_SESSION_FLEET_FILE);
-        }
-        
-        if (!ATT_SESSION_SWAPACTIONS_FILE.isEmpty()) {
-            ImportBase.importSwapActionsFile(ATT_SESSION_SWAPACTIONS_FILE);
-        }
-        
-        if (!ATT_SESSION_COORDINATES_FILE.isEmpty()) {
-            ImportBase.importCoordinates(ATT_SESSION_COORDINATES_FILE);
-        }
-        
-        if (!ATT_SESSION_DISTANCES_FILE.isEmpty()) {
-            ImportBase.importDistanceTime(ATT_SESSION_DISTANCES_FILE);
-        }
-        
-        if (!ATT_SESSION_LOCATIONS_FILE.isEmpty()) {
-            ImportBase.importLocations(ATT_SESSION_LOCATIONS_FILE);
+    public void importFiles(HttpServletRequest request, HttpServletResponse response) {
+        String fileNameFleet = (String) session.getAttribute(ATT_SESSION_FLEET_FILE);
+        String fileNameSwapActions = (String) session.getAttribute(ATT_SESSION_SWAPACTIONS_FILE);
+        String fileNameCoordinates = (String) session.getAttribute(ATT_SESSION_COORDINATES_FILE);
+        String fileNameDistanceTime = (String) session.getAttribute(ATT_SESSION_DISTANCES_FILE);
+        String fileNameLocations = (String) session.getAttribute(ATT_SESSION_LOCATIONS_FILE);
+
+        try {
+            if (fileNameFleet != null && !fileNameFleet.equals("") && fileNameSwapActions != null && !fileNameSwapActions.equals("")) {
+                ImportBase.importParameters(fileNameFleet, fileNameSwapActions);
+            }
+
+            if (!fileNameCoordinates.isEmpty()) {
+                ImportBase.importCoordinates(fileNameCoordinates);
+            }
+
+            if (!fileNameDistanceTime.isEmpty()) {
+                ImportBase.importDistanceTime(fileNameDistanceTime);
+            }
+
+            if (!fileNameLocations.isEmpty()) {
+                ImportBase.importLocations(fileNameLocations);
+            }
+            
+        } catch (Exception ex) {
+            Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

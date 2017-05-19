@@ -2,6 +2,7 @@ package utils;
 
 import dao.CoordinateDao;
 import dao.CustomerDao;
+import dao.DaoException;
 import dao.DaoFactory;
 import dao.DistanceTimeDao;
 import dao.LocationDao;
@@ -24,11 +25,20 @@ import metier.SwapLocation;
  */
 public class ImportBase {
     
-    public static void importFleetFile(String fileName) throws Exception {
+    public static void importParameters(String fileNameFleet, String fileNameSwapActions) throws Exception {
         RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
-        RoutingParameters routingParameters = parametersManager.find();
+        parametersManager.deleteAll();
         
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        RoutingParameters routingParameters = new RoutingParameters();
+        
+        ImportBase.importFleetFile(routingParameters, fileNameFleet);
+        ImportBase.importSwapActionsFile(routingParameters, fileNameSwapActions);
+        
+        parametersManager.create(routingParameters);
+    }
+
+    public static void importFleetFile(RoutingParameters routingParameters, String fileNameFleet) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader(fileNameFleet));
         String line = br.readLine();
         
         while ((line = br.readLine()) != null) {
@@ -53,16 +63,12 @@ public class ImportBase {
         }
         
         br.close();
-        parametersManager.create(routingParameters);
         
         Utils.log("Import <Flotte> OK");
     }
     
-    public static void importSwapActionsFile(String fileName) throws Exception {
-        RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
-        RoutingParameters routingParameters = parametersManager.find();
-        
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+    public static void importSwapActionsFile(RoutingParameters routingParameters, String fileNameSwapActions) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader(fileNameSwapActions));
         String line = br.readLine();
         
         while ((line = br.readLine()) != null) {
@@ -85,7 +91,6 @@ public class ImportBase {
         }
         
         br.close();
-        parametersManager.create(routingParameters);
         
         Utils.log("Import <Swap Actions> OK");
     }
