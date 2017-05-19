@@ -12,6 +12,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <link href="http://code.google.com/apis/maps/documentation/javascript/examples/default.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyBBBWw6VTe0VjBqdS8DssFqVUdg2O9wORI&language=fr&sensor=false"></script>
     <link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css"
     rel="stylesheet" type="text/css">
     <link href="CSS/style.css" rel="stylesheet" type="text/css">
@@ -19,7 +21,7 @@
     <title>SB-VRP</title>
   </head>
   
-  <body>
+  <body onload="initialize()">
     <div class="navbar navbar-default navbar-static-top">
       <div class="container">
         <div class="navbar-header">
@@ -41,7 +43,7 @@
       <div class="container">
         <div class="row">
           <h1 class="text-primary">Dernière Solution</h1>
-          <div id="maps"></div>
+          <div id="maps" style="float:left;width:70%;height:100%;"></div>
         </div>
       </div>
     </div>
