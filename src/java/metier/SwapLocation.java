@@ -23,11 +23,12 @@ public class SwapLocation extends Location implements Serializable {
     
     @Override
     public String toString() {
-        return "Customer { " 
+        return "SwapLocation { " 
                 + "id=" + this.getId() 
                 + ", postalCode=" + this.getPostalCode() 
                 + ", city=" + this.getCity() 
                 + ", coordinate=" + this.getCoordinate()
                 + " } \n";
     }
+    
 }

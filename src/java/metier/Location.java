@@ -1,6 +1,10 @@
 package metier;
 
+import dao.DaoFactory;
+import dao.LocationDao;
+import dao.PersistenceType;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -120,5 +124,10 @@ public class Location implements Serializable {
                 + ", city=" + city 
                 + ", coordinate=" + coordinate 
                 + " } \n";
+    }
+    
+    public Collection<Location> allLocations() {
+        LocationDao locationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getLocationDao();
+        return locationManager.findAll();
     }
 }

@@ -28,7 +28,7 @@ public class Depot extends Location implements Serializable {
     
     @Override
     public String toString() {
-        return "Customer { " 
+        return "Depot { " 
                 + "id=" + this.getId() 
                 + ", postalCode=" + this.getPostalCode() 
                 + ", city=" + this.getCity() 

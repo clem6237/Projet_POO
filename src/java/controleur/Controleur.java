@@ -379,12 +379,12 @@ public class Controleur extends HttpServlet {
             
             ImportBase.resetSolution();
             
-            if (files.containsKey(ATT_SESSION_COORDINATES_FILE)
+            /*if (files.containsKey(ATT_SESSION_COORDINATES_FILE)
                     && files.containsKey(ATT_SESSION_DISTANCES_FILE)) {
                 ImportBase.importCoordinatesFromWeb(
                         files.get(ATT_SESSION_COORDINATES_FILE),
                         files.get(ATT_SESSION_DISTANCES_FILE));
-            }
+            }*/
             
             if (files.containsKey(ATT_SESSION_FLEET_FILE)
                     && files.containsKey(ATT_SESSION_SWAPACTIONS_FILE)) {

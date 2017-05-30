@@ -1,6 +1,10 @@
 package metier;
 
+import dao.CustomerDao;
+import dao.DaoFactory;
+import dao.PersistenceType;
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -78,5 +82,10 @@ public class Customer extends Location implements Serializable {
                 + ", accessible=" + accessible
                 + ", serviceTime=" + serviceTime
                 + " } \n";
+    }
+    
+    public Collection<Customer> allCustomers() {
+        CustomerDao customerManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCustomerDao();
+        return customerManager.findAll();
     }
 }
