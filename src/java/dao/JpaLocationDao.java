@@ -28,7 +28,7 @@ public class JpaLocationDao extends JpaDaoT<Location> implements LocationDao {
         try {
             et.begin();
             
-            Query query = em.createNativeQuery("DELETE FROM Location WHERE Location.DType = 'Location'");
+            Query query = em.createNativeQuery("DELETE FROM Location");
             query.executeUpdate();
             
             et.commit();

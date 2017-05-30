@@ -64,7 +64,7 @@ public class Version2 {
         ImportBase.importParameters(filePath + fileNameFleet, filePath + fileNameSwapActions);
         //ImportBase.importCoordinates(filePath + fileNameCoordinates);
         //ImportBase.importDistanceTime(filePath + fileNameDistanceTime);
-        ImportBase.importLocations(filePath + fileNameLocations);
+        ImportBase.importLocations(filePath + fileNameLocations, null);
         
         // Algorithme de création des tournées
         test.scanCustomerRequests();

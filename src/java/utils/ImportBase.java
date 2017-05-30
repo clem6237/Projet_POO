@@ -3,12 +3,13 @@ package utils;
 import controleur.Controleur;
 import dao.CoordinateDao;
 import dao.CustomerDao;
-import dao.DaoException;
 import dao.DaoFactory;
 import dao.DistanceTimeDao;
 import dao.LocationDao;
 import dao.PersistenceType;
+import dao.RouteDao;
 import dao.RoutingParametersDao;
+import dao.TourDao;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -34,21 +35,22 @@ import org.apache.commons.fileupload.FileItem;
 public class ImportBase {
     private static int TAILLE_TAMPON = 10240;
     
-    public static void importParameters(String fileNameFleet, String fileNameSwapActions) throws Exception {
+    public static void resetSolution() throws Exception {
         RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
+        TourDao tourManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getTourDao();
+        RouteDao routeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRouteDao();
+        LocationDao locationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getLocationDao();
+        
         parametersManager.deleteAll();
+        routeManager.deleteAll();
+        tourManager.deleteAll();
+        locationManager.deleteAll();
         
-        RoutingParameters routingParameters = new RoutingParameters();
-        
-        ImportBase.importFleetFile(routingParameters, fileNameFleet, null);
-        ImportBase.importSwapActionsFile(routingParameters, fileNameSwapActions, null);
-        
-        parametersManager.create(routingParameters);
+        Utils.log("Reset OK");
     }
     
     public static void importParametersFromWeb(FileItem fleet, FileItem swapActions) throws Exception {
         RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
-        parametersManager.deleteAll();
         RoutingParameters routingParameters = new RoutingParameters();
         
         try {
@@ -64,6 +66,18 @@ public class ImportBase {
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        parametersManager.create(routingParameters);
+    }
+    
+    public static void importParameters(String fileNameFleet, String fileNameSwapActions) throws Exception {
+        RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
+        parametersManager.deleteAll();
+        
+        RoutingParameters routingParameters = new RoutingParameters();
+        
+        ImportBase.importFleetFile(routingParameters, fileNameFleet, null);
+        ImportBase.importSwapActionsFile(routingParameters, fileNameSwapActions, null);
         
         parametersManager.create(routingParameters);
     }
@@ -140,10 +154,34 @@ public class ImportBase {
         Utils.log("Import <Swap Actions> OK");
     }
     
-    public static void importCoordinates(String fileName) throws Exception {
+    public static void importCoordinatesFromWeb(FileItem coordinates, FileItem distanceTime) throws Exception {
+        DistanceTimeDao distanceTimeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getDistanceTimeDao();
         CoordinateDao coordinateManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCoordinateDao();
         
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        distanceTimeManager.deleteAll();
+        coordinateManager.deleteAll();
+        
+        InputStream contentCoord = coordinates.getInputStream();
+        InputStream contentDistTime = distanceTime.getInputStream();
+        
+        BufferedInputStream inputCoord = new BufferedInputStream(contentCoord, TAILLE_TAMPON);
+        BufferedInputStream inputDistTime = new BufferedInputStream(contentDistTime, TAILLE_TAMPON);
+            
+        ImportBase.importCoordinates("", inputCoord);
+        ImportBase.importDistanceTime("", inputDistTime);
+    }
+    
+    public static void importCoordinates(String fileName, BufferedInputStream input) throws Exception {
+        CoordinateDao coordinateManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCoordinateDao();
+        
+        BufferedReader br;
+        
+        if (!fileName.equals("")) {
+            br = new BufferedReader(new FileReader(fileName));
+        } else {
+            br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        }
+        
         String line = br.readLine();
         
         int idCoord = 1;
@@ -162,11 +200,18 @@ public class ImportBase {
         Utils.log("Import <Coordonnées> OK");
     }
     
-    public static void importDistanceTime(String fileName) throws Exception {
+    public static void importDistanceTime(String fileName, BufferedInputStream input) throws Exception {
         DistanceTimeDao distanceTimeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getDistanceTimeDao();
         CoordinateDao coordinateManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCoordinateDao();
         
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        BufferedReader br;
+        
+        if (!fileName.equals("")) {
+            br = new BufferedReader(new FileReader(fileName));
+        } else {
+            br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        }
+        
         String line = br.readLine();
         
         Collection<DistanceTime> listDistanceTime = new ArrayList();
@@ -195,13 +240,28 @@ public class ImportBase {
         
         Utils.log("Import <Distances/Temps> OK");
     }
+   
+    public static void importLocationsFromWeb(FileItem locations) throws Exception {
     
-    public static void importLocations(String fileName) throws Exception {
+        InputStream content = locations.getInputStream();
+        BufferedInputStream input = new BufferedInputStream(content, TAILLE_TAMPON);
+            
+        ImportBase.importLocations("", input);
+    }
+    
+    public static void importLocations(String fileName, BufferedInputStream input) throws Exception {
         LocationDao locationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getLocationDao();
         CustomerDao customerManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCustomerDao();
         CoordinateDao coordinateManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCoordinateDao();
         
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        BufferedReader br;
+        
+        if (!fileName.equals("")) {
+            br = new BufferedReader(new FileReader(fileName));
+        } else {
+            br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        }
+        
         String line = br.readLine();
         
         while ((line = br.readLine()) != null) {
