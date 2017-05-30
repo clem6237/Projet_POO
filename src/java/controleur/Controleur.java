@@ -1,8 +1,5 @@
 package controleur;
 
-import dao.CoordinateDao;
-import dao.DaoFactory;
-import dao.PersistenceType;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -17,7 +14,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import metier.Coordinate;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -211,9 +207,11 @@ public class Controleur extends HttpServlet {
                     switch (fieldName) {
                         case "coordinates":
                             coordinatesFile = fieldValue;
+                            files.put(ATT_SESSION_COORDINATES_FILE, item);
                             break;
                         case "distances":
                             distancesFile = fieldValue;
+                            files.put(ATT_SESSION_DISTANCES_FILE, item);
                             break;
                         case ATT_SESSION_FLEET_FILE:
                             fleetFile = fieldValue;
@@ -346,6 +344,9 @@ public class Controleur extends HttpServlet {
                             
                             //On lance le calcul
                             this.importFiles(request, response);
+                            this.calcSolution(request, response);
+                            
+                            forward("index.jsp", request, response);
                         }
                 break;
                     
@@ -374,46 +375,37 @@ public class Controleur extends HttpServlet {
     }
     
     public void importFiles(HttpServletRequest request, HttpServletResponse response) {
-        String fileNameFleet = (String) session.getAttribute(ATT_SESSION_FLEET_FILE);
-        String fileNameSwapActions = (String) session.getAttribute(ATT_SESSION_SWAPACTIONS_FILE);
-        String fileNameCoordinates = (String) session.getAttribute(ATT_SESSION_COORDINATES_FILE);
-        String fileNameDistanceTime = (String) session.getAttribute(ATT_SESSION_DISTANCES_FILE);
-        String fileNameLocations = (String) session.getAttribute(ATT_SESSION_LOCATIONS_FILE);
-        
         try {
             
-            ImportBase.importParametersFromWeb(
-                    files.get(ATT_SESSION_FLEET_FILE), 
-                    files.get(ATT_SESSION_SWAPACTIONS_FILE));
+            ImportBase.resetSolution();
+            
+            if (files.containsKey(ATT_SESSION_COORDINATES_FILE)
+                    && files.containsKey(ATT_SESSION_DISTANCES_FILE)) {
+                ImportBase.importCoordinatesFromWeb(
+                        files.get(ATT_SESSION_COORDINATES_FILE),
+                        files.get(ATT_SESSION_DISTANCES_FILE));
+            }
+            
+            if (files.containsKey(ATT_SESSION_FLEET_FILE)
+                    && files.containsKey(ATT_SESSION_SWAPACTIONS_FILE)) {
+                
+                ImportBase.importParametersFromWeb(
+                        files.get(ATT_SESSION_FLEET_FILE), 
+                        files.get(ATT_SESSION_SWAPACTIONS_FILE));
+            }
+            
+            if (files.containsKey(ATT_SESSION_LOCATIONS_FILE)) {
+            
+                ImportBase.importLocationsFromWeb(
+                        files.get(ATT_SESSION_LOCATIONS_FILE));
+            }
             
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        /*try {
-            if (fileNameFleet != null && !fileNameFleet.equals("") && fileNameSwapActions != null && !fileNameSwapActions.equals("")) {
-                ImportBase.importParameters(fileNameFleet, fileNameSwapActions);
-            }
-
-            if (!fileNameCoordinates.isEmpty()) {
-                ImportBase.importCoordinates(fileNameCoordinates);
-            }
-
-            if (!fileNameDistanceTime.isEmpty()) {
-                ImportBase.importDistanceTime(fileNameDistanceTime);
-            }
-
-            if (!fileNameLocations.isEmpty()) {
-                ImportBase.importLocations(fileNameLocations);
-            }
-            
-        } catch (Exception ex) {
-            Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
     }
     
-    private void getCoordinates() {
-        CoordinateDao coordinateManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCoordinateDao();
-        List<Coordinate> list = (List<Coordinate>) coordinateManager.findAll();
+    public void calcSolution(HttpServletRequest request, HttpServletResponse response) {
+        
     }
 }
