@@ -2,8 +2,9 @@ package metier;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,6 +17,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import utils.CoordinatesCalc;
 
 /**
  *
@@ -38,13 +40,13 @@ public class Tour implements Serializable {
     private int id;
     
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "tour")
-    private Collection<Route> listRoutes;
+    private List<Route> listRoutes;
 
     public Tour() {
         this.listRoutes = new ArrayList();
     }
 
-    public Tour(Collection<Route> listRoutes) {
+    public Tour(List<Route> listRoutes) {
         this.listRoutes = listRoutes;
     }
 
@@ -56,12 +58,80 @@ public class Tour implements Serializable {
         this.id = id;
     }
 
-    public Collection<Route> getListRoutes() {
+    public List<Route> getListRoutes() {
         return listRoutes;
     }
 
-    public void setListRoutes(Collection<Route> listRoutes) {
+    public void setListRoutes(List<Route> listRoutes) {
         this.listRoutes = listRoutes;
+    }
+    
+    public double getTourTime() {
+        CoordinatesCalc calc = new CoordinatesCalc();
+        
+        Coordinate lastCoordinate = null;
+        double timeTotal = 0;
+        
+        for(Route r : this.listRoutes) {
+            Location l = r.getLocation();
+            //Si c'est un client, on ajoute le temps de service
+            if(r.getLocationType() == LocationType.CUSTOMER) {
+                Customer c = (Customer) r.getLocation();
+                timeTotal += c.getServiceTime();
+            }
+            
+            if(lastCoordinate != null) {
+                try {
+                    timeTotal += calc.getTotalTimeBetweenCoord(lastCoordinate, l.getCoordinate());
+                } catch (Exception ex) {
+                    Logger.getLogger(Tour.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                lastCoordinate =  l.getCoordinate();
+            } else {
+                lastCoordinate =  l.getCoordinate();
+            }
+        }
+        
+        return timeTotal;
+    }
+    
+    public double getTourQuantity() throws Exception {
+        double quantity = 0;
+        
+        for(Route r : this.listRoutes) {
+            //Parcours chaque client
+            if(r.getLocationType() == LocationType.CUSTOMER) {
+                quantity += r.getQty1() + r.getQty2();
+            }
+        }
+        
+        return quantity;
+    }
+    
+    public double getFirstTrailerQuantity() throws Exception {
+        double quantity = 0;
+        
+        for(Route r : this.listRoutes) {
+            //Parcours chaque client
+            if(r.getLocationType() == LocationType.CUSTOMER) {
+                quantity += r.getQty1();
+            }
+        }
+        
+        return quantity;
+    }
+    
+    public double getLastTrailerQuantity() throws Exception {
+        double quantity = 0;
+        
+        for(Route r : this.listRoutes) {
+            //Parcours chaque client
+            if(r.getLocationType() == LocationType.CUSTOMER) {
+                quantity += r.getQty2();
+            }
+        }
+        
+        return quantity;
     }
 
     @Override
@@ -93,7 +163,7 @@ public class Tour implements Serializable {
     public String toString() {
         return "Tour{" 
                 + "id=" + id 
-                + ", listRoutes=" + listRoutes 
-                + "}";
+                + ", listRoutes=\n" + listRoutes 
+                + "}\n";
     }
 }

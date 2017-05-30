@@ -205,15 +205,15 @@ public class Route implements Serializable {
 
     @Override
     public String toString() {
-        return "Route { " 
-                //+ "tour=" + tour 
-                + ", position=" + position 
+        return "\tRoute { " 
+                + " position=" + position 
+                + ", locationType=" + locationType
                 + ", trailerAttached=" + trailerAttached 
                 + ", firstTrailer=" + firstTrailer 
                 + ", lastTrailer=" + lastTrailer 
                 + ", swapAction=" + swapAction 
                 + ", qty1=" + qty1 
                 + ", qty2=" + qty2 
-                + " }";
+                + " }\n";
     }
 }

@@ -20,6 +20,7 @@ import java.util.List;
 import metier.Coordinate;
 import metier.Customer;
 import metier.Depot;
+import metier.Location;
 import metier.LocationType;
 import metier.Route;
 import metier.RoutingParameters;
@@ -33,7 +34,7 @@ import utils.Utils;
  *
  * @author clementruffin
  */
-public class Version2 {
+public class Version3 {
     
     static String filePath = "Projet2017/";
     static String fileNameFleet = "small_normal/Fleet.csv";
@@ -55,16 +56,16 @@ public class Version2 {
     RouteDao routeManager;
     
     public static void main(String[] args) throws Exception {
-        Version2 test = new Version2();
+        Version3 test = new Version3();
         
         Utils.log("Démarrage");
         test.initialize();
         
         // Importation des paramètres, coordonnées & emplacements
-        ImportBase.importParameters(filePath + fileNameFleet, filePath + fileNameSwapActions);
+        //ImportBase.importParameters(filePath + fileNameFleet, filePath + fileNameSwapActions);
         //ImportBase.importCoordinates(filePath + fileNameCoordinates);
         //ImportBase.importDistanceTime(filePath + fileNameDistanceTime);
-        ImportBase.importLocations(filePath + fileNameLocations);
+        //ImportBase.importLocations(filePath + fileNameLocations);
         
         // Algorithme de création des tournées
         test.scanCustomerRequests();
@@ -86,55 +87,87 @@ public class Version2 {
         
         routeManager.deleteAll();
         tourManager.deleteAll();
-        customerManager.deleteAll();
+        /*customerManager.deleteAll();
         swapLocationManager.deleteAll();
         depotManager.deleteAll();
         locationManager.deleteAll();
         //distanceTimeManager.deleteAll();
         //coordinateManager.deleteAll();
-        parametersManager.deleteAll();
+        parametersManager.deleteAll();*/
     }
     
     public void scanCustomerRequests() throws Exception {
+        RoutingParameters parameters = parametersManager.find();
+        
+        Tour lastTour = null;
+        List<Tour> tournees = new ArrayList();
         Collection<Customer> allCustomers = customerManager.findAll();
         
         for (Customer customer : allCustomers) {
-            this.processCustomerRequest(customer);
+            System.out.println(customer);
+            //Récupére le dernier tour
+            if(! tournees.isEmpty()) {
+                lastTour = tournees.get(tournees.size() - 1);
+            }
+            
+            if(lastTour != null) {
+                //Vérifie si le client peut être livré à temps
+                double tpsCustomer = lastTour.getTourTime() + customer.getServiceTime() + getTimeReturn(customer.getCoordinate());
+                if(tpsCustomer > parameters.getOperatingTime()) {
+                    //Création d'un nouveau tour
+                    endedTour(lastTour);
+                    tournees.add(createNewTour(customer));
+                } else {
+                    double qty1Total = lastTour.getFirstTrailerQuantity()+ customer.getOrderedQty();
+                    double tourTotal = lastTour.getTourQuantity()+ customer.getOrderedQty();
+                    
+                    //Si le camion a une remorque
+                    boolean attached = ((Route) lastTour.getListRoutes().get(lastTour.getListRoutes().size() - 1)).isTrailerAttached();
+                
+                    if (qty1Total < parameters.getBodyCapacity() && !attached) {
+                        //Ajoute la route      
+                        addCustumer(lastTour, customer, attached);
+                    } else if(tourTotal < parameters.getBodyCapacity() * 2 && attached && customer.isAccessible()) {
+                        //Ajoute la route
+                        addCustumer(lastTour, customer, attached);
+                    } else if((qty1Total > parameters.getBodyCapacity() && !attached) 
+                                || (tourTotal > parameters.getBodyCapacity() * 2 && attached && customer.isAccessible())){
+                        //Création d'un nouveau tour
+                        endedTour(lastTour);
+                        tournees.add(createNewTour(customer));
+                    } 
+                }
+            } else {                
+                //Création d'un nouveau tour
+                tournees.add(createNewTour(customer));
+            }
         }
+        //Termine la derniére tournée
+        lastTour = tournees.get(tournees.size() - 1);
+        endedTour(lastTour);
         
         Utils.log("Tournées créées");
     }
     
-    public void processCustomerRequest(Customer customer) throws Exception {
-        Depot depot = depotManager.find();
-        Coordinate coordDepot = depot.getCoordinate();
+    public Tour createNewTour(Customer customer) throws Exception {
+        System.out.println("Création d'un nouveau tour");
         
-        CoordinatesCalc calc = new CoordinatesCalc();
-        
-        double distanceTotal = calc.getTotalDistanceBetweenCoord(coordDepot, customer.getCoordinate());
-        double timeTotal = calc.getTotalTimeBetweenCoord(coordDepot, customer.getCoordinate())
-                + customer.getServiceTime();
-        
+        Depot depot = depotManager.find();        
         RoutingParameters parameters = parametersManager.find();
         
-        if (timeTotal > parameters.getOperatingTime()) {
-            Utils.log("ERREUR - Livraison impossible (Client '" + customer.getId() + "' -> " 
-                    + timeTotal + " / " + parameters.getOperatingTime() + ")");
-            return;
-        }
-        
+        //Vérifie si on a besoin d'un train
         boolean attachTrailer = false;
-        
+
         if (customer.getOrderedQty() > parameters.getBodyCapacity()) {
             if (!customer.isAccessible()) {
                 Utils.log("ERREUR - Livraison impossible (Client '" + customer.getId() + "' -> " 
-                    + customer.getOrderedQty() + " / " + parameters.getBodyCapacity() + " <=> NON ACCESSIBLE)");
-                return;
+                     + customer.getOrderedQty() + " / " + parameters.getBodyCapacity() + " <=> NON ACCESSIBLE)");
+                return null;
             } else {
                 attachTrailer = true;
             }
         }
-        
+                
         Tour tour = new Tour();
         Route route;
         List<Route> listRoutes = new ArrayList();
@@ -165,9 +198,46 @@ public class Version2 {
         route.setQty2(customer.getOrderedQty() > parameters.getBodyCapacity() ? customer.getOrderedQty() - parameters.getBodyCapacity() : 0);
         listRoutes.add(route);
         
-        route = new Route();
-        route.setTour(tour);
-        route.setPosition(3);
+        tour.setListRoutes(listRoutes);
+        return tour;
+    }
+    
+    public Tour addCustumer(Tour t, Customer c, boolean attachTrailer) throws Exception {
+        System.out.println("Ajout d'une route");   
+        RoutingParameters parameters = parametersManager.find();
+        
+        List<Route> listRoutes = t.getListRoutes();
+                
+        Route route = new Route();
+        route.setTour(t);
+        route.setPosition(listRoutes.size() + 1);
+        route.setLocation(c);
+        route.setLocationType(LocationType.CUSTOMER);
+        route.setTrailerAttached(attachTrailer);
+        route.setFirstTrailer(1);
+        route.setLastTrailer(attachTrailer ? 2 : 0);
+        route.setSwapAction(SwapAction.NONE);
+        route.setQty1(c.getOrderedQty() > parameters.getBodyCapacity() ? parameters.getBodyCapacity() : c.getOrderedQty());
+        route.setQty2(c.getOrderedQty() > parameters.getBodyCapacity() ? c.getOrderedQty() - parameters.getBodyCapacity() : 0);
+        listRoutes.add(route);
+        
+        t.setListRoutes(listRoutes);
+        return t;
+    }
+    
+    public Tour endedTour(Tour t) throws Exception {        
+        Depot depot = depotManager.find();        
+        RoutingParameters parameters = parametersManager.find();
+        
+        List<Route> listRoutes = t.getListRoutes();
+        
+        boolean attachTrailer = false;
+        if(((Route) listRoutes.get(listRoutes.size() - 1)).isTrailerAttached())
+            attachTrailer = true;
+                
+        Route route = new Route();
+        route.setTour(t);
+        route.setPosition(listRoutes.size() + 1);
         route.setLocation(depot);
         route.setLocationType(LocationType.DEPOT);
         route.setTrailerAttached(attachTrailer);
@@ -178,8 +248,18 @@ public class Version2 {
         route.setQty2(0);
         listRoutes.add(route);
         
-        tour.setListRoutes(listRoutes);
-        tourManager.create(tour);
+        t.setListRoutes(listRoutes);        
+        tourManager.create(t);
+        return t;
+    }
+    
+    public double getTimeReturn(Coordinate coordinate) throws Exception {
+        Depot depot = depotManager.find();
+        Coordinate coordDepot = depot.getCoordinate();
+        
+        CoordinatesCalc calc = new CoordinatesCalc();
+        
+        return calc.getTotalTimeBetweenCoord(coordinate, coordDepot);
     }
     
     public void createSolution() throws Exception {
