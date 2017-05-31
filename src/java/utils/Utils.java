@@ -15,4 +15,32 @@ public class Utils {
         
         System.out.println(dateFormat.format(date) + " - " + message);
     }
+    
+    public static String write(String value, String line) throws Exception {
+
+        if (value == null) {
+            value = "";
+        }
+
+        boolean needQuote = false;
+
+        if (value.contains("\n")) {
+            needQuote = true;
+        }
+
+        if (value.contains(";")) {
+            needQuote = true;
+        }
+
+        if (value.contains("\"")) {
+            needQuote = true;
+            value = value.replaceAll("\"", "\"\"");
+        }
+
+        if(needQuote) {
+            value = "\"" + value + "\"";
+        }
+
+        return line += value;
+    }
 }

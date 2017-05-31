@@ -93,7 +93,7 @@
                         <h3>Camions</h3>
                         <ul id="camions" class="list-group">
                             <c:forEach items="${tours.allTours()}" var="tours">
-                                <li class="list-group-item" id="$(tours.id)">Tournée ${tours.id}</li>
+                                <li class="list-group-item" id="${tours.id}">Tournée ${tours.id}</li>
                             </c:forEach>
                             <script>
                                 <c:forEach items="${route.allRoutes()}" var="route">
