@@ -23,7 +23,7 @@
   
     <body onload="initialize()">
         <jsp:useBean id="locations" class="metier.Location" />
-        <jsp:useBean id="routes" class="metier.Route" />
+        <jsp:useBean id="tours" class="metier.Tour" />
         <jsp:useBean id="customers" class="metier.Customer" />
     
         <div class="navbar navbar-default navbar-static-top">
@@ -72,8 +72,8 @@
                     <div class="col-md-6">
                         <h3>Camions</h3>
                         <ul id="camions" class="list-group">
-                            <c:forEach items="${routes.allRoutes()}" var="route">
-                                <li class="list-group-item" id="$(route.id)">${route.id}</li>
+                            <c:forEach items="${tours.allTours()}" var="tours">
+                                <li class="list-group-item" id="$(tours.id)">Tournée ${tours.id}</li>
                             </c:forEach>
                         </ul>
                     </div>

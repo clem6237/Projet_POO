@@ -1,5 +1,6 @@
 package controleur;
 
+import calc.Version3;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ public class Controleur extends HttpServlet {
     private final String UPLOAD_DIRECTORY = "files";
     private final int TAILLE_TAMPON = 10240;
     private final Map<String, FileItem> files = new HashMap<>();
+    private boolean importCoord = false;
 
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -261,6 +263,11 @@ public class Controleur extends HttpServlet {
                             if(distancesFile != null && !distancesFile.equals(""))
                                 session.setAttribute(ATT_SESSION_DISTANCES_FILE, distancesFile);
                             
+                            if(coordinatesFile != null && !coordinatesFile.equals("") 
+                                    && distancesFile != null && !distancesFile.equals("")) {
+                                importCoord = true;
+                            }
+                            
                             //Passe à la page suivante
                             nextPage = 2;
                             request.setAttribute("active", nextPage);
@@ -379,26 +386,18 @@ public class Controleur extends HttpServlet {
             
             ImportBase.resetSolution();
             
-            /*if (files.containsKey(ATT_SESSION_COORDINATES_FILE)
-                    && files.containsKey(ATT_SESSION_DISTANCES_FILE)) {
+            if (importCoord) {
                 ImportBase.importCoordinatesFromWeb(
                         files.get(ATT_SESSION_COORDINATES_FILE),
                         files.get(ATT_SESSION_DISTANCES_FILE));
-            }*/
-            
-            if (files.containsKey(ATT_SESSION_FLEET_FILE)
-                    && files.containsKey(ATT_SESSION_SWAPACTIONS_FILE)) {
-                
-                ImportBase.importParametersFromWeb(
-                        files.get(ATT_SESSION_FLEET_FILE), 
-                        files.get(ATT_SESSION_SWAPACTIONS_FILE));
             }
             
-            if (files.containsKey(ATT_SESSION_LOCATIONS_FILE)) {
-            
-                ImportBase.importLocationsFromWeb(
-                        files.get(ATT_SESSION_LOCATIONS_FILE));
-            }
+            ImportBase.importParametersFromWeb(
+                    files.get(ATT_SESSION_FLEET_FILE), 
+                    files.get(ATT_SESSION_SWAPACTIONS_FILE));
+
+            ImportBase.importLocationsFromWeb(
+                    files.get(ATT_SESSION_LOCATIONS_FILE));
             
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
@@ -406,6 +405,16 @@ public class Controleur extends HttpServlet {
     }
     
     public void calcSolution(HttpServletRequest request, HttpServletResponse response) {
+        Version3 calc = new Version3();
         
+        try {
+            
+            calc.initialize();
+            calc.scanCustomerRequests();
+            //calc.createSolution();
+            
+        } catch (Exception ex) {
+            Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

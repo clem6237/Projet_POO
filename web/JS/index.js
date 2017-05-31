@@ -63,4 +63,10 @@ function initialize() {
            }  
          })(marker)); 
     }
+    
+    if (i == 0) {
+        latlng = new google.maps.LatLng(50.435255, 2.823530);
+        map.setCenter(latlng);
+        map.setZoom(16);
+    }
 }

@@ -1,7 +1,11 @@
 package metier;
 
+import dao.DaoFactory;
+import dao.PersistenceType;
+import dao.TourDao;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -165,5 +169,10 @@ public class Tour implements Serializable {
                 + "id=" + id 
                 + ", listRoutes=\n" + listRoutes 
                 + "}\n";
+    }
+    
+    public Collection<Tour> allTours() {
+        TourDao tourManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getTourDao();
+        return tourManager.findAll();
     }
 }

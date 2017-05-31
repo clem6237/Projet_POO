@@ -221,9 +221,4 @@ public class Route implements Serializable {
                 + ", qty2=" + qty2 
                 + " }\n";
     }
-    
-    public Collection<Route> allRoutes() {
-        RouteDao routeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRouteDao();
-        return routeManager.findAll();
-    }
 }
