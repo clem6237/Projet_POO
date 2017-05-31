@@ -26,6 +26,7 @@
         <jsp:useBean id="swapLocations" class="metier.SwapLocation" />
         <jsp:useBean id="customers" class="metier.Customer" />
         <jsp:useBean id="tours" class="metier.Tour" />
+        <jsp:useBean id="route" class="metier.Route" />
     
         <div class="navbar navbar-default navbar-static-top">
             <div class="container">
@@ -94,6 +95,21 @@
                             <c:forEach items="${tours.allTours()}" var="tours">
                                 <li class="list-group-item" id="$(tours.id)">Tournée ${tours.id}</li>
                             </c:forEach>
+                            <script>
+                                <c:forEach items="${route.allRoutes()}" var="route">
+                                    var routeDetail = new Object();
+                                    routeDetail.tour = ${route.tour.id};
+                                    routeDetail.position = ${route.position};
+                                    routeDetail.coordX = ${route.location.coordinate.coordX};
+                                    routeDetail.coordY = ${route.location.coordinate.coordY};
+                                    
+                                    var routeMap = routes.get(routeDetail.tour);
+                                    if (!routeMap) routeMap = new Array();
+                                    routeMap.push(routeDetail);
+                                    
+                                    routes.set(routeDetail.tour, routeMap);
+                                </c:forEach>
+                            </script>
                         </ul>
                     </div>
                     <div class="col-md-6">

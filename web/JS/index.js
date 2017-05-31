@@ -27,13 +27,12 @@ $(document).on("click", ".list-group-item", function onClickList() {
 var directionDisplay;
 var directionsService = new google.maps.DirectionsService();
 var map;
-var addrs = new Array();
-var locations = new Array();
 var infowindows;
 
 var depots = new Array();
 var swapLocations = new Array();
 var customers = new Array();
+var routes = new Map();
 
 function initialize() {
     var latlng;

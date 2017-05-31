@@ -1,6 +1,10 @@
 package metier;
 
+import dao.DaoFactory;
+import dao.PersistenceType;
+import dao.RouteDao;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -212,5 +216,10 @@ public class Route implements Serializable {
                 + ", qty1=" + qty1 
                 + ", qty2=" + qty2 
                 + " }\n";
+    }
+    
+    public Collection<Route> allRoutes() {
+        RouteDao routeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRouteDao();
+        return routeManager.findAll();
     }
 }
