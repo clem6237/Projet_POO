@@ -25,7 +25,8 @@ import metier.SwapAction;
 import metier.Tour;
 
 /**
- *
+ * Contient les méthodes permettant de calculer la solution optimale de 
+ * livraison des commandes clients.
  * @author clementruffin
  */
 public class SolutionCalc {
@@ -40,6 +41,10 @@ public class SolutionCalc {
     TourDao tourManager;
     RouteDao routeManager;
     
+    /**
+     * Supprime les tournées enregistrées
+     * @throws DaoException 
+     */
     public void initialize() throws DaoException {
         parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
         depotManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getDepotDao();

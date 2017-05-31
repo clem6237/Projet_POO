@@ -4,11 +4,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- *
+ * Contient des méthodes utiles
  * @author clementruffin
  */
 public class Utils {
     
+    /**
+     * Log un message dans la console en affichant l'heure du message.
+     * @param message 
+     */
     public static void log(String message) {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
@@ -16,6 +20,13 @@ public class Utils {
         System.out.println(dateFormat.format(date) + " - " + message);
     }
     
+    /**
+     * Sécurise l'écriture de données dans une ligne de fichier.
+     * @param value
+     * @param line
+     * @return
+     * @throws Exception 
+     */
     public static String write(String value, String line) throws Exception {
 
         if (value == null) {
