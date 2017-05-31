@@ -1,6 +1,5 @@
 package controleur;
 
-import calc.Version3;
 import dao.DaoFactory;
 import dao.PersistenceType;
 import dao.RouteDao;
@@ -26,6 +25,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import utils.ImportBase;
+import utils.SolutionCalc;
 import utils.Utils;
 
 /**
@@ -301,13 +301,12 @@ public class Controleur extends HttpServlet {
     }
     
     public void calcSolution(HttpServletRequest request, HttpServletResponse response) {
-        Version3 calc = new Version3();
+        SolutionCalc calc = new SolutionCalc();
         
         try {
             
             calc.initialize();
             calc.scanCustomerRequests();
-            //calc.createSolution();
             
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
