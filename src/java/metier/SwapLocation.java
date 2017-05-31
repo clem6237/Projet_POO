@@ -1,7 +1,13 @@
 package metier;
 
+import dao.DaoFactory;
+import dao.PersistenceType;
+import dao.SwapLocationDao;
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Entity;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -12,6 +18,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Entity
 @Table(name = "SWAPLOCATION")
 @XmlRootElement
+@NamedQueries({
+    @NamedQuery(name = "SwapLocation.findAll", query = "SELECT s FROM SwapLocation s")
+})
 public class SwapLocation extends Location implements Serializable {
     
     public SwapLocation() {
@@ -31,4 +40,8 @@ public class SwapLocation extends Location implements Serializable {
                 + " } \n";
     }
     
+    public Collection<SwapLocation> allSwapLocations() {
+        SwapLocationDao swapLocationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getSwapLocationDao();
+        return swapLocationManager.findAll();
+    }
 }

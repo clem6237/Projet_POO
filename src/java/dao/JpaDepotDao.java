@@ -1,5 +1,6 @@
 package dao;
 
+import java.util.Collection;
 import javax.persistence.Query;
 import metier.Depot;
 
@@ -35,6 +36,13 @@ public class JpaDepotDao extends JpaDaoT<Depot> implements DepotDao {
         } catch (Exception e) {
             throw new DaoException("Error during deleteAll", e);
         }
+    }
+    
+    @Override
+    public Collection findAll() {
+        Query query = em.createNamedQuery("Depot.findAll"); 
+        
+        return (Collection<Depot>) query.getResultList();
     }
 
     @Override

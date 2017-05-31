@@ -1,11 +1,6 @@
 package metier;
 
-import dao.CustomerDao;
-import dao.DaoFactory;
-import dao.PersistenceType;
-import dao.RouteDao;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -202,10 +197,7 @@ public class Route implements Serializable {
         if (this.position != other.position) {
             return false;
         }
-        if (!Objects.equals(this.tour, other.tour)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.tour, other.tour);
     }
 
     @Override

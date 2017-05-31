@@ -33,7 +33,7 @@ import org.apache.commons.fileupload.FileItem;
  * @author clementruffin
  */
 public class ImportBase {
-    private static int TAILLE_TAMPON = 10240;
+    private static final int TAILLE_TAMPON = 10240;
     
     public static void resetSolution() throws Exception {
         RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
@@ -91,7 +91,8 @@ public class ImportBase {
             br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         }
         
-        String line = br.readLine();
+        br.readLine();
+        String line;
         
         while ((line = br.readLine()) != null) {
             String[] data = line.split(";");
@@ -128,7 +129,8 @@ public class ImportBase {
             br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         }
         
-        String line = br.readLine();
+        br.readLine();
+        String line;
         
         while ((line = br.readLine()) != null) {
             String[] data = line.split(";");
@@ -182,7 +184,8 @@ public class ImportBase {
             br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         }
         
-        String line = br.readLine();
+        br.readLine();
+        String line;
         
         int idCoord = 1;
         
@@ -212,7 +215,8 @@ public class ImportBase {
             br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         }
         
-        String line = br.readLine();
+        br.readLine();
+        String line;
         
         Collection<DistanceTime> listDistanceTime = new ArrayList();
         int idCoordFrom = 1;
@@ -262,7 +266,8 @@ public class ImportBase {
             br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         }
         
-        String line = br.readLine();
+        br.readLine();
+        String line;
         
         while ((line = br.readLine()) != null) {
             String[] data = line.split(";");

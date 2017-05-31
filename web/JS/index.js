@@ -12,8 +12,12 @@ $(document).on("click", ".list-group-item", function onClickList() {
             var coordY = $(this).attr("coordY");
             var latlng = new google.maps.LatLng(coordY, coordX);
             
+            // Map centré sur le client
             map.setCenter(latlng);
             map.setZoom(16);
+            
+            // Scroll en haut pour visualiser la map
+            window.scrollTo(0,0);
             
             break;
     }
@@ -27,44 +31,81 @@ var addrs = new Array();
 var locations = new Array();
 var infowindows;
 
+var depots = new Array();
+var swapLocations = new Array();
+var customers = new Array();
+
 function initialize() {
-    var latlng;// = new google.maps.LatLng(locations[0].coordY, locations[0].coordX);
-    
+    var latlng;
     map = new google.maps.Map(document.getElementById("maps"), {});
     infowindow = new google.maps.InfoWindow(); 
     
     var i;
-    
-    for (i = 0; i < locations.length; i++) {
+
+    /** DEPOTS **/
+    for (i = 0; i < depots.length; i++) {
         
-        latlng = new google.maps.LatLng(locations[i].coordY, locations[i].coordX);
+        latlng = new google.maps.LatLng(depots[i].coordY, depots[i].coordX);
         
         var marker = new google.maps.Marker({
             position: latlng,
             map: map,
-            title: locations[i].id + "<br/>" + locations[i].postalCode + " - " + locations[i].city
+            title: "Dépôt " + depots[i].id + "<br/>" + depots[i].postalCode + " - " + depots[i].city,
+            icon: ('http://maps.google.com/mapfiles/ms/icons/red-dot.png')
         });  
         
-        if (locations[i].id.indexOf('D') > -1) {
-            map.setCenter(latlng);
-            map.setZoom(8);
+        map.setCenter(latlng);
+        map.setZoom(8);
             
-            marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png')
-        } else if (locations[i].id.indexOf('S') > -1) {
-            marker.setIcon('http://maps.google.com/mapfiles/ms/icons/yellow-dot.png')
-        } else if (locations[i].id.indexOf('C') > -1) {
-            marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
-        }
-        
         google.maps.event.addListener(marker, 'click', (function(marker) {  
-           return function() {  
-               infowindow.setContent(marker.title);  
-               infowindow.open(map, marker);  
-           }  
-         })(marker)); 
+            return function() {  
+                infowindow.setContent(marker.title);  
+                infowindow.open(map, marker);  
+            }  
+        })(marker)); 
     }
     
-    if (i == 0) {
+    /** SWAP LOCATIONS **/
+    for (i = 0; i < swapLocations.length; i++) {
+        
+        latlng = new google.maps.LatLng(swapLocations[i].coordY, swapLocations[i].coordX);
+        
+        var marker = new google.maps.Marker({
+            position: latlng,
+            map: map,
+            title: "Swap Location " + swapLocations[i].id + "<br/>" + swapLocations[i].postalCode + " - " + swapLocations[i].city,
+            icon: ('http://maps.google.com/mapfiles/ms/icons/yellow-dot.png')
+        });  
+        
+        google.maps.event.addListener(marker, 'click', (function(marker) {  
+            return function() {  
+                infowindow.setContent(marker.title);  
+                infowindow.open(map, marker);  
+            }  
+        })(marker)); 
+    }
+    
+    /** CUSTOMERS **/
+    for (i = 0; i < customers.length; i++) {
+        
+        latlng = new google.maps.LatLng(customers[i].coordY, customers[i].coordX);
+        
+        var marker = new google.maps.Marker({
+            position: latlng,
+            map: map,
+            title: "Client " + customers[i].id + "<br/>" + customers[i].postalCode + " - " + customers[i].city,
+            icon: ('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
+        });  
+        
+        google.maps.event.addListener(marker, 'click', (function(marker) {  
+            return function() {  
+                infowindow.setContent(marker.title);  
+                infowindow.open(map, marker);  
+            }  
+        })(marker)); 
+    }
+    
+    if (i === 0) {
         latlng = new google.maps.LatLng(50.435255, 2.823530);
         map.setCenter(latlng);
         map.setZoom(16);

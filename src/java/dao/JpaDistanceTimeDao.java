@@ -28,9 +28,9 @@ public class JpaDistanceTimeDao extends JpaDaoT<DistanceTime> implements Distanc
         try {
             et.begin();
             
-            for (DistanceTime distanceTime : listDistanceTime) {
+            listDistanceTime.forEach((distanceTime) -> {
                 em.persist(distanceTime);
-            }
+            });
             
             et.commit();
             

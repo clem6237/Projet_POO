@@ -1,6 +1,10 @@
 package metier;
 
+import dao.DaoFactory;
+import dao.DepotDao;
+import dao.PersistenceType;
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -15,7 +19,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "DEPOT")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Depot.find", query = "SELECT d FROM Depot d")
+    @NamedQuery(name = "Depot.findAll", query = "SELECT d FROM Depot d"),
+    @NamedQuery(name = "Depot.find", query = "SELECT d FROM Depot d"),
 })
 public class Depot extends Location implements Serializable {
     
@@ -34,5 +39,10 @@ public class Depot extends Location implements Serializable {
                 + ", city=" + this.getCity() 
                 + ", coordinate=" + this.getCoordinate()
                 + " } \n";
+    }
+    
+    public Collection<Depot> allDepots() {
+        DepotDao depotManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getDepotDao();
+        return depotManager.findAll();
     }
 }

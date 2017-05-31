@@ -201,10 +201,7 @@ public class RoutingParameters implements Serializable {
             return false;
         }
         final RoutingParameters other = (RoutingParameters) obj;
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.id, other.id);
     }
 
     @Override

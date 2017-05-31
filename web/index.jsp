@@ -22,9 +22,10 @@
     </head>
   
     <body onload="initialize()">
-        <jsp:useBean id="locations" class="metier.Location" />
-        <jsp:useBean id="tours" class="metier.Tour" />
+        <jsp:useBean id="depots" class="metier.Depot" />
+        <jsp:useBean id="swapLocations" class="metier.SwapLocation" />
         <jsp:useBean id="customers" class="metier.Customer" />
+        <jsp:useBean id="tours" class="metier.Tour" />
     
         <div class="navbar navbar-default navbar-static-top">
             <div class="container">
@@ -47,18 +48,36 @@
             <div class="container">
                 <div class="row">
                     <h1 class="text-primary">Dernière Solution</h1>
-                    <div id="locations" value="${locations.allLocations()}"></div>
-                    
                     <script>
-                        <c:forEach items="${locations.allLocations()}" var="location">
-                            var locationDetail = new Object();
-                            locationDetail.id = '${location.id}';
-                            locationDetail.postalCode = ${location.postalCode};
-                            locationDetail.city = '${location.city}';
-                            locationDetail.coordX = ${location.coordinate.coordX};
-                            locationDetail.coordY = ${location.coordinate.coordY};
+                        <c:forEach items="${depots.allDepots()}" var="depot">
+                            var depotDetail = new Object();
+                            depotDetail.id = '${depot.id}';
+                            depotDetail.postalCode = ${depot.postalCode};
+                            depotDetail.city = '${depot.city}';
+                            depotDetail.coordX = ${depot.coordinate.coordX};
+                            depotDetail.coordY = ${depot.coordinate.coordY};
                             
-                            locations.push(locationDetail);
+                            depots.push(depotDetail);
+                        </c:forEach>
+                        <c:forEach items="${swapLocations.allSwapLocations()}" var="swapLocation">
+                            var swapLocationDetail = new Object();
+                            swapLocationDetail.id = '${swapLocation.id}';
+                            swapLocationDetail.postalCode = ${swapLocation.postalCode};
+                            swapLocationDetail.city = '${swapLocation.city}';
+                            swapLocationDetail.coordX = ${swapLocation.coordinate.coordX};
+                            swapLocationDetail.coordY = ${swapLocation.coordinate.coordY};
+                            
+                            swapLocations.push(swapLocationDetail);
+                        </c:forEach>
+                        <c:forEach items="${customers.allCustomers()}" var="customer">
+                            var customerDetail = new Object();
+                            customerDetail.id = '${customer.id}';
+                            customerDetail.postalCode = ${customer.postalCode};
+                            customerDetail.city = '${customer.city}';
+                            customerDetail.coordX = ${customer.coordinate.coordX};
+                            customerDetail.coordY = ${customer.coordinate.coordY};
+                            
+                            customers.push(customerDetail);
                         </c:forEach>
                     </script>
                     

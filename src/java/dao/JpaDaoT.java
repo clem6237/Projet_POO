@@ -9,6 +9,7 @@ import javax.persistence.Persistence;
 /**
  *
  * @author clementruffin
+ * @param <T>
  */
 public abstract class JpaDaoT<T> implements DaoT<T> {
 

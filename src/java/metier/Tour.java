@@ -157,10 +157,7 @@ public class Tour implements Serializable {
             return false;
         }
         final Tour other = (Tour) obj;
-        if (this.id != other.id) {
-            return false;
-        }
-        return true;
+        return this.id == other.id;
     }
 
     @Override
