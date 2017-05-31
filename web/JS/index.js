@@ -5,6 +5,8 @@ $(document).on("click", ".list-group-item", function onClickList() {
     
     switch(type) {
         case 'camions':
+            var idtour = $(this).attr("id");
+            calculItineraire(idtour);
             break;
             
         case 'clients':
@@ -29,12 +31,15 @@ var directionsService = new google.maps.DirectionsService();
 var map;
 var infowindows;
 
+
+var addrs = new Array();
 var depots = new Array();
 var swapLocations = new Array();
 var customers = new Array();
 var routes = new Map();
 
 function initialize() {
+    directionsDisplay = new google.maps.DirectionsRenderer();
     var latlng;
     map = new google.maps.Map(document.getElementById("maps"), {});
     infowindow = new google.maps.InfoWindow(); 
@@ -109,4 +114,46 @@ function initialize() {
         map.setCenter(latlng);
         map.setZoom(16);
     }
+}
+
+function calculItineraire(id) {
+   
+    directionsDisplay = new google.maps.DirectionsRenderer();
+    
+    var myOptions = {
+      zoom: 4,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    
+    map = new google.maps.Map(document.getElementById("maps"), myOptions);
+    directionsDisplay.setMap(map);
+    
+    var routeInfos = new Array();
+    routeInfos = routes.get(parseInt(id));
+    
+    var start = new google.maps.LatLng(routeInfos[0].coordY, routeInfos[0].coordX);
+    var end = new google.maps.LatLng(routeInfos[routeInfos.length - 1].coordY, routeInfos[routeInfos.length - 1].coordX);
+    
+    var waypts = [];
+    for (var i = 0; i < routeInfos.length; i++) {   
+        var lat = new google.maps.LatLng(routeInfos[i].coordY, routeInfos[i].coordX);
+        waypts.push({
+            location: lat,
+            stopover:true});
+      
+    }
+     
+    var request = {
+        origin: start, 
+        destination: end,
+        waypoints: waypts,
+        optimizeWaypoints: true,
+        travelMode: google.maps.DirectionsTravelMode.DRIVING
+    };
+    
+    directionsService.route(request, function(response, status) {
+      if (status == google.maps.DirectionsStatus.OK) {
+        directionsDisplay.setDirections(response);
+      }
+  });
 }
