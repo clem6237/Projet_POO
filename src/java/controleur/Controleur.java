@@ -56,65 +56,6 @@ public class Controleur extends HttpServlet {
         String action = request.getParameter("action");
         try (PrintWriter out = response.getWriter()) {
             switch(action){
-                case "export":
-                    System.out.println("Exporter la solution");
-                    break;
-                case "next" :
-                    String vue = request.getParameter("vue");
-                    switch(vue){
-                        case "1" : 
-                            //On initialise le donnée de cette page en session
-                            session.removeAttribute(ATT_SESSION_COORDINATES_FILE);
-                            session.removeAttribute(ATT_SESSION_DISTANCES_FILE);
-                            
-                            //Récupére les infos de la page
-                            String coordinatesFile = request.getParameter("coordinates");
-                            if(coordinatesFile != null && !coordinatesFile.equals("") )
-                                session.setAttribute(ATT_SESSION_COORDINATES_FILE, coordinatesFile);
-                            
-                            String distancesFile = request.getParameter("distances");      
-                            if(distancesFile != null && !distancesFile.equals(""))
-                                session.setAttribute(ATT_SESSION_DISTANCES_FILE, distancesFile);
-                            
-                            //Passe à la page suivante
-                            nextPage = 2;
-                            request.setAttribute("active", nextPage);
-                            forward("/calcul.jsp", request, response);
-                        break; 
-                        case "2" : 
-                            //On initialise le donnée de cette page en session
-                            session.removeAttribute(ATT_SESSION_FLEET_FILE);
-                            session.removeAttribute(ATT_SESSION_SWAPACTIONS_FILE);
-                            
-                            //Récupére les infos de la page
-                            String fleetFile = request.getParameter("fleet");
-                            String swapActionFile = request.getParameter("swapActions");  
-                            
-                            //Si un des fichiers est null, on reste sur la page
-                            if(fleetFile.equals("") || swapActionFile.equals("")) {
-                                if(fleetFile.equals(""))
-                                    request.setAttribute("fleet", "error");
-                                if(swapActionFile.equals(""))
-                                    request.setAttribute("swapActions", "error");
-                                
-                                request.setAttribute("active", 2);
-                                forward("/calcul.jsp", request, response);
-                            } else {
-                                //On enregistre les fichiers en session
-                                session.setAttribute(ATT_SESSION_FLEET_FILE, fleetFile);
-                                session.setAttribute(ATT_SESSION_SWAPACTIONS_FILE, swapActionFile);
-                                
-                                //On passe à la page suivante
-                                nextPage = 3;
-                                request.setAttribute("active", nextPage);
-                                forward("/calcul.jsp", request, response);
-                            }
-                        break;
-                        default :
-                            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
-                        break;
-                    }
-                break; 
                 case "previous" :
                     String vueP = request.getParameter("vue");
                     switch(vueP){
@@ -138,23 +79,6 @@ public class Controleur extends HttpServlet {
                             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
                         break;
                     }
-                    break;
-                case "calcul" :
-                        //On initialise le donnée de cette page en session
-                        session.removeAttribute(ATT_SESSION_LOCATIONS_FILE);
-                        
-                        //Récupére les infos de la page
-                        String locationsFile = request.getParameter("locations");  
-                        //Si le fichier est null, on reste sur la page
-                        if(locationsFile.equals("")) {
-                            request.setAttribute("locations", "error");
-                            request.setAttribute("active", 3);
-                            forward("/calcul.jsp", request, response);
-                        } else {
-                            session.setAttribute(ATT_SESSION_LOCATIONS_FILE, locationsFile);
-                            //On lance le calcul
-                            this.importFiles(request, response);
-                        }
                     break;
                 default :
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
@@ -309,31 +233,6 @@ public class Controleur extends HttpServlet {
                         break;
                     }
                 break; 
-                
-                case "previous" :
-                    String vueP = request.getParameter("vue");
-                    switch(vueP){
-                        case "2" :
-                            //Info de la page d'import 2
-                            System.out.println("Prev: Page 2 OK");
-                            
-                            nextPage = 1;
-                            request.setAttribute("active", nextPage);
-                            forward("/calcul.jsp", request, response);
-                        break; 
-                        case "3" :
-                            //Info de la page d'import 3
-                            System.out.println("Prev: Page 3 OK");
-                            
-                            nextPage = 2;
-                            request.setAttribute("active", nextPage);
-                            forward("/calcul.jsp", request, response);
-                        break;
-                        default :
-                            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
-                        break;
-                    }
-                break;
                     
                 case "calcul" :
                         //On initialise le donnée de cette page en session

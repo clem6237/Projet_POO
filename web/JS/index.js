@@ -50,8 +50,8 @@ function initialize() {
         var marker = new google.maps.Marker({
             position: latlng,
             map: map,
-            title: "Dépôt " + depots[i].id + "<br/>" + depots[i].postalCode + " - " + depots[i].city,
-            icon: ('http://maps.google.com/mapfiles/ms/icons/red-dot.png')
+            title: "D&eacute;p&ocirc;t " + depots[i].id + "<br/>" + depots[i].postalCode + " - " + depots[i].city
+            //icon: ('http://maps.google.com/mapfiles/ms/icons/red-dot.png')
         });  
         
         map.setCenter(latlng);
