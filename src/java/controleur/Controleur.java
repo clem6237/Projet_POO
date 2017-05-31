@@ -1,8 +1,11 @@
 package controleur;
 
-import calc.Version3;
+import dao.DaoFactory;
+import dao.PersistenceType;
+import dao.RouteDao;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,11 +18,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import metier.Route;
+import metier.Tour;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import utils.ImportBase;
+import utils.SolutionCalc;
+import utils.Utils;
 
 /**
  *
@@ -35,8 +42,6 @@ public class Controleur extends HttpServlet {
     
     HttpSession session;
     
-    private final String UPLOAD_DIRECTORY = "files";
-    private final int TAILLE_TAMPON = 10240;
     private final Map<String, FileItem> files = new HashMap<>();
     private boolean importCoord = false;
 
@@ -56,6 +61,10 @@ public class Controleur extends HttpServlet {
         String action = request.getParameter("action");
         try (PrintWriter out = response.getWriter()) {
             switch(action){
+                case "export":
+                    this.exportSolution(request, response);
+                    break;
+                    
                 case "previous" :
                     String vueP = request.getParameter("vue");
                     switch(vueP){
@@ -158,18 +167,11 @@ public class Controleur extends HttpServlet {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
                 
-        //String action = request.getParameter("action");
-        
         try (PrintWriter out = response.getWriter()) {
             
             switch(action){
             
-                case "export":
-                    System.out.println("Exporter la solution");
-                    break;
-                
                 case "next" :
-                    //String vue = request.getParameter("vue");
                     
                     switch(vue){
                     
@@ -179,11 +181,9 @@ public class Controleur extends HttpServlet {
                             session.removeAttribute(ATT_SESSION_DISTANCES_FILE);
                             
                             //Récupére les infos de la page
-                            //String coordinatesFile = request.getParameter("coordinates");
                             if(coordinatesFile != null && !coordinatesFile.equals("") )
                                 session.setAttribute(ATT_SESSION_COORDINATES_FILE, coordinatesFile);
                             
-                            //String distancesFile = request.getParameter("distances");      
                             if(distancesFile != null && !distancesFile.equals(""))
                                 session.setAttribute(ATT_SESSION_DISTANCES_FILE, distancesFile);
                             
@@ -204,8 +204,6 @@ public class Controleur extends HttpServlet {
                             session.removeAttribute(ATT_SESSION_SWAPACTIONS_FILE);
                             
                             //Récupére les infos de la page
-                            //String fleetFile = request.getParameter("fleet");
-                            //String swapActionFile = request.getParameter("swapActions");  
                             
                             //Si un des fichiers est null, on reste sur la page
                             if(fleetFile.equals("") || swapActionFile.equals("")) {
@@ -239,7 +237,6 @@ public class Controleur extends HttpServlet {
                         session.removeAttribute(ATT_SESSION_LOCATIONS_FILE);
                         
                         //Récupére les infos de la page
-                        //String locationsFile = request.getParameter("locations");  
                         //Si le fichier est null, on reste sur la page
                         if(locationsFile.equals("")) {
                             request.setAttribute("locations", "error");
@@ -304,15 +301,91 @@ public class Controleur extends HttpServlet {
     }
     
     public void calcSolution(HttpServletRequest request, HttpServletResponse response) {
-        Version3 calc = new Version3();
+        SolutionCalc calc = new SolutionCalc();
         
         try {
             
             calc.initialize();
             calc.scanCustomerRequests();
-            //calc.createSolution();
             
         } catch (Exception ex) {
+            Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void exportSolution(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        response.setContentType("application/csv");
+        response.setHeader("content-disposition","filename=Solution.csv"); // set the file name to whatever required..
+        
+        try (PrintWriter out = response.getWriter()) {
+            
+            String line = "";
+            
+            String[] titles = { 
+                "TOUR_ID", 
+                "TOUR_POSITION", 
+                "LOCATION_ID", 
+                "LOCATION_TYPE",
+                "SEMI_TRAILER_ATTACHED",
+                "SWAP_BODY_TRAILER",
+                "SWAP_BODY_SEMI_TRAILER",
+                "SWAP_ACTION",
+                "SWAP_BODY_1_QUANTITY",
+                "SWAP_BODY_2_QUANTITY"
+            };
+
+            boolean first = true;
+
+            for (String title : titles) {
+                if (first) {
+                    first = false;
+                } else {
+                    line += ";";
+                }
+
+                line = Utils.write(title, line);
+            }
+
+            out.println(line);
+            
+            RouteDao routeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRouteDao();
+            Collection<Route> listRoutes = routeManager.findAll();
+        
+            int nbTour = 0;
+            Tour lastTour = null;
+
+            for (Route route : listRoutes) {
+                String value = "";
+
+                Tour tour = route.getTour();
+                if (!tour.equals(lastTour)) {
+                    nbTour++;
+                    lastTour = tour;
+                }
+
+                value += "R" + (nbTour) + ";";
+                value += route.getPosition() + ";";
+                value += route.getLocation().getId() + ";";
+                value += route.getLocationType().name() + ";";
+                value += (route.isTrailerAttached() ? "1" : "0") + ";";
+                value += route.getFirstTrailer() + ";";
+                value += route.getLastTrailer() + ";";
+                value += route.getSwapAction() + ";";
+                value += route.getQty1() + ";";
+                value += route.getQty2();
+
+                line = "";
+                line = Utils.write(value, line);
+                
+                out.println(line);
+            }
+
+            Utils.log("Solution exportée");
+
+            out.flush();
+            out.close();
+            
+        } catch (IOException ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
