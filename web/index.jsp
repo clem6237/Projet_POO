@@ -110,7 +110,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-6">
-                        <h3>Camions</h3>
+                        <h3>Camions (${tours.allTours().size()})</h3>
                         <ul id="camions" class="list-group">
                             <c:forEach items="${tours.allTours()}" var="tour">
                                 <li class="list-group-item" id="${tour.id}">
@@ -127,7 +127,7 @@
                         </ul>
                     </div>
                     <div class="col-md-6">
-                        <h3>Clients</h3>
+                        <h3>Clients (${customers.allCustomers().size()})</h3>
                         <ul id="clients" class="list-group">
                             <c:forEach items="${customers.allCustomers()}" var="customer">
                                 <li class="list-group-item" id="${customer.id}" coordX="${customer.coordinate.coordX}" coordY="${customer.coordinate.coordY}">${customer.id} - ${customer.postalCode} ${customer.city}</li>

@@ -2,6 +2,7 @@ package metier;
 
 import dao.DaoFactory;
 import dao.PersistenceType;
+import dao.RouteDao;
 import dao.TourDao;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -70,6 +71,46 @@ public class Tour implements Serializable {
         this.listRoutes = listRoutes;
     }
     
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + this.id;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Tour other = (Tour) obj;
+        return this.id == other.id;
+    }
+
+    @Override
+    public String toString() {
+        return "Tour{" 
+                + "id=" + id 
+                + ", listRoutes=\n" + listRoutes 
+                + "}\n";
+    }
+    
+    public Collection<Tour> allTours() {
+        TourDao tourManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getTourDao();
+        return tourManager.findAll();
+    }
+    
+    public Collection<Route> listRoutesOrdered() {
+        RouteDao routeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRouteDao();
+        return routeManager.findByTour(this);
+    }
+    
     public double getTourTime() {
         CoordinatesCalc calc = new CoordinatesCalc();
         
@@ -136,40 +177,5 @@ public class Tour implements Serializable {
         }
         
         return quantity;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 59 * hash + this.id;
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Tour other = (Tour) obj;
-        return this.id == other.id;
-    }
-
-    @Override
-    public String toString() {
-        return "Tour{" 
-                + "id=" + id 
-                + ", listRoutes=\n" + listRoutes 
-                + "}\n";
-    }
-    
-    public Collection<Tour> allTours() {
-        TourDao tourManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getTourDao();
-        return tourManager.findAll();
     }
 }
