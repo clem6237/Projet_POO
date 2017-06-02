@@ -55,6 +55,7 @@ $(document).on("click", "#refreshMap", function onClickList() {
 
 function initialize() {
     var latlng;
+    var title;
     var i;
 
     directionsDisplay = new google.maps.DirectionsRenderer();
@@ -65,63 +66,30 @@ function initialize() {
     for (i = 0; i < depots.length; i++) {
         
         latlng = new google.maps.LatLng(depots[i].coordY, depots[i].coordX);
+        title = "D&eacute;p&ocirc;t " + depots[i].id + "<br/>" + depots[i].postalCode + " - " + depots[i].city;
         
-        var marker = new google.maps.Marker({
-            position: latlng,
-            map: map,
-            title: "D&eacute;p&ocirc;t " + depots[i].id + "<br/>" + depots[i].postalCode + " - " + depots[i].city
-            //icon: ('http://maps.google.com/mapfiles/ms/icons/red-dot.png')
-        });  
+        createMarker(map, latlng, title, '');
         
         map.setCenter(latlng);
         map.setZoom(8);
-            
-        google.maps.event.addListener(marker, 'click', (function(marker) {  
-            return function() {  
-                infowindow.setContent(marker.title);  
-                infowindow.open(map, marker);  
-            };
-        })(marker)); 
     }
     
     /** SWAP LOCATIONS **/
     for (i = 0; i < swapLocations.length; i++) {
         
         latlng = new google.maps.LatLng(swapLocations[i].coordY, swapLocations[i].coordX);
+        title = "Swap Location " + swapLocations[i].id + "<br/>" + swapLocations[i].postalCode + " - " + swapLocations[i].city;
         
-        var marker = new google.maps.Marker({
-            position: latlng,
-            map: map,
-            title: "Swap Location " + swapLocations[i].id + "<br/>" + swapLocations[i].postalCode + " - " + swapLocations[i].city,
-            icon: ('http://maps.google.com/mapfiles/ms/icons/yellow-dot.png')
-        });  
-        
-        google.maps.event.addListener(marker, 'click', (function(marker) {  
-            return function() {  
-                infowindow.setContent(marker.title);  
-                infowindow.open(map, marker);  
-            };
-        })(marker)); 
+        createMarker(map, latlng, title, 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png');
     }
     
     /** CUSTOMERS **/
     for (i = 0; i < customers.length; i++) {
         
         latlng = new google.maps.LatLng(customers[i].coordY, customers[i].coordX);
+        title = "Client " + customers[i].id + "<br/>" + customers[i].postalCode + " - " + customers[i].city;
         
-        var marker = new google.maps.Marker({
-            position: latlng,
-            map: map,
-            title: "Client " + customers[i].id + "<br/>" + customers[i].postalCode + " - " + customers[i].city,
-            icon: ('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
-        });  
-        
-        google.maps.event.addListener(marker, 'click', (function(marker) {  
-            return function() {  
-                infowindow.setContent(marker.title);  
-                infowindow.open(map, marker);  
-            };  
-        })(marker)); 
+        createMarker(map, latlng, title, 'http://maps.google.com/mapfiles/ms/icons/green-dot.png');
     }
     
     if (i === 0) {
@@ -136,9 +104,9 @@ function calcItineraire(id) {
     map = new google.maps.Map(document.getElementById("maps"), {});
     map.setZoom(4);
     
-    directionsDisplay = new google.maps.DirectionsRenderer({});
+    directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
     directionsDisplay.setMap(map);
-console.log(routes);
+
     var routeInfos = routes.get(parseInt(id));
 
     var start = new google.maps.LatLng(routeInfos[0].coordY, routeInfos[0].coordX);
@@ -150,7 +118,8 @@ console.log(routes);
         var lat = new google.maps.LatLng(routeInfos[i].coordY, routeInfos[i].coordX);
         waypts.push({
             location: lat,
-            stopover: true});
+            stopover: true
+        });
     }
      
     var request = {
@@ -165,5 +134,50 @@ console.log(routes);
       if (status === google.maps.DirectionsStatus.OK) {
         directionsDisplay.setDirections(response);
       }
-  });
+    });
+    
+    var title;
+    var location;
+    
+    /* POINT DE DÉPART */
+    location = routeInfos[routeInfos.length - 1];
+    title = "D&eacute;p&ocirc;t " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
+    createMarker(map, end, title, "http://maps.gstatic.com/mapfiles/markers2/marker_greenD.png");
+    
+    /* POINT D'ARRIVÉE */
+    location = routeInfos[0];
+    title = "D&eacute;p&ocirc;t " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
+    createMarker(map, start, title, "http://maps.gstatic.com/mapfiles/markers2/marker_greenD.png");
+    
+    /* ÉTAPES */
+    for (var i = 1; i < waypts.length - 1; i++) {
+        
+        location = routeInfos[i];
+        
+        if (location.locationType === "DEPOT") {
+            title = "D&eacute;p&ocirc;t " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
+        } else if (location.locationType === "SWAP LOCATION") {
+            title = "Swap Location " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
+        } else if (location.locationType === "CUSTOMER") {
+            title = "Client " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
+        }
+        
+        createMarker(map, waypts[i].location, title, "http://www.google.com/mapfiles/marker_yellow.png");
+        
+    }
+}
+
+function createMarker(map, latlng, label, icon) {
+    var marker = new google.maps.Marker({
+        position: latlng,
+        map: map,
+        icon: icon,
+        title: label,
+        zIndex: Math.round(latlng.lat() * -100000) << 5
+    });
+
+    google.maps.event.addListener(marker, 'click', function() {
+        infowindow.setContent(marker.title);
+        infowindow.open(map, marker);
+    });
 }
