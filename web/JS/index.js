@@ -1,5 +1,15 @@
 /* global google */
 
+var directionDisplay;
+var directionsService = new google.maps.DirectionsService();
+var map;
+var infowindows;
+
+var depots = new Array();
+var swapLocations = new Array();
+var customers = new Array();
+var routes = new Map();
+
 $(document).on("click", ".list-group-item", function onClickList() {
     var type = $(this).parent().attr('id');
     
@@ -8,11 +18,20 @@ $(document).on("click", ".list-group-item", function onClickList() {
     switch(type) {
         case 'camions':
             var idTour = $(this).attr("id");
+            document.getElementById("selection").innerHTML = "Tourn&eacute;e " + idTour;
+            
             calcItineraire(idTour);
+            
+            // Scroll en haut pour visualiser la map
+            //window.scrollTo(0,0);
+            
             break;
             
         case 'clients':
             initialize();
+            
+            var idCustomer = $(this).attr("id");
+            document.getElementById("selection").innerHTML = "Client " + idCustomer;
             
             var coordX = $(this).attr("coordX");
             var coordY = $(this).attr("coordY");
@@ -23,7 +42,7 @@ $(document).on("click", ".list-group-item", function onClickList() {
             map.setZoom(16);
             
             // Scroll en haut pour visualiser la map
-            window.scrollTo(0,0);
+            //window.scrollTo(0,0);
             
             break;
     }
@@ -31,19 +50,8 @@ $(document).on("click", ".list-group-item", function onClickList() {
 
 $(document).on("click", "#refreshMap", function onClickList() {
     initialize();
+    document.getElementById("selection").innerHTML = "";
 });
-
-var directionDisplay;
-var directionsService = new google.maps.DirectionsService();
-var map;
-var infowindows;
-
-
-var addrs = new Array();
-var depots = new Array();
-var swapLocations = new Array();
-var customers = new Array();
-var routes = new Map();
 
 function initialize() {
     var latlng;

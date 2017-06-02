@@ -30,7 +30,36 @@
         if($(this).hasClass( "disabled" ))
             return;
         else
-          $('#send').submit();  
+        {
+            //$('#send').submit();  
+            $("#loading").css("display", "block");
+            event.preventDefault();
+            var form = $('#send')[0];
+            var data = new FormData(form);
+            $("#BtnNext").prop("disabled", true);
+
+            $.ajax({
+                type: "POST",
+                enctype: 'multipart/form-data',
+                url: "Controleur",
+                data: data,
+                processData: false,
+                contentType: false,
+                cache: false,
+                success: function (data) {
+
+                    console.log("SUCCESS : ", data);
+                    document.location.href = "./index.jsp"
+
+                },
+                error: function (e) {
+
+                    console.log("ERROR : ", e);
+                    
+
+                }
+            });
+        }
     });
 </script>
 <div class="container">
@@ -59,6 +88,10 @@
                     <a href="index.jsp">Annuler</a>
                   </li>
                 </ul>
+                <div id="loading" style="display: none; text-align: center;">
+                    <img id="loading-img" src="./IMG/loading.gif" />
+                    <h2>Chargement en cours <img src="./IMG/dots-loader.gif"/></h2>
+                </div>
            </form>
         </div>
     </div>

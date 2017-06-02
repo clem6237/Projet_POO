@@ -80,9 +80,27 @@
                             
                             customers.push(customerDetail);
                         </c:forEach>
+                        <c:forEach items="${route.allRoutes()}" var="route">
+                            var routeDetail = new Object();
+                            routeDetail.tour = ${route.tour.id};
+                            routeDetail.position = ${route.position};
+                            routeDetail.coordX = ${route.location.coordinate.coordX};
+                            routeDetail.coordY = ${route.location.coordinate.coordY};
+                            routeDetail.locationType = '${route.locationType}';
+                            routeDetail.locationId = '${route.location.id}';
+                            routeDetail.postalCode = ${route.location.postalCode};
+                            routeDetail.city = '${route.location.city}';
+
+                            var routeMap = routes.get(routeDetail.tour);
+                            if (!routeMap) routeMap = new Array();
+                            routeMap.push(routeDetail);
+
+                            routes.set(routeDetail.tour, routeMap);
+                        </c:forEach>
                     </script>
                     
                     <input type="button" id="refreshMap" value="Rafraîchir la carte" />
+                    <h2 id="selection" style="text-align: center;"></h2>
                     <div id="maps" style="float:left;width:100%;height:70%;"></div>
                     
                 </div>
@@ -94,35 +112,25 @@
                     <div class="col-md-6">
                         <h3>Camions</h3>
                         <ul id="camions" class="list-group">
-                            <c:forEach items="${tours.allTours()}" var="tours">
-                                <li class="list-group-item" id="${tours.id}">Tournée ${tours.id}</li>
+                            <c:forEach items="${tours.allTours()}" var="tour">
+                                <li class="list-group-item" id="${tour.id}">
+                                    Tournée ${tour.id} 
+                                    (
+                                    <c:forEach items="${tour.listRoutes}" var="route">
+                                         ${route.location.id} 
+                                    </c:forEach>
+                                    )
+                                </li>
+                                
+                                
                             </c:forEach>
-                            <script>
-                                <c:forEach items="${route.allRoutes()}" var="route">
-                                    var routeDetail = new Object();
-                                    routeDetail.tour = ${route.tour.id};
-                                    routeDetail.position = ${route.position};
-                                    routeDetail.coordX = ${route.location.coordinate.coordX};
-                                    routeDetail.coordY = ${route.location.coordinate.coordY};
-                                    routeDetail.locationType = '${route.locationType}';
-                                    routeDetail.locationId = '${route.location.id}';
-                                    routeDetail.postalCode = ${route.location.postalCode};
-                                    routeDetail.city = '${route.location.city}';
-                                        
-                                    var routeMap = routes.get(routeDetail.tour);
-                                    if (!routeMap) routeMap = new Array();
-                                    routeMap.push(routeDetail);
-                                    
-                                    routes.set(routeDetail.tour, routeMap);
-                                </c:forEach>
-                            </script>
                         </ul>
                     </div>
                     <div class="col-md-6">
                         <h3>Clients</h3>
                         <ul id="clients" class="list-group">
                             <c:forEach items="${customers.allCustomers()}" var="customer">
-                                <li class="list-group-item" id="$(customer.id)" coordX="${customer.coordinate.coordX}" coordY="${customer.coordinate.coordY}">${customer.id} - ${customer.postalCode} ${customer.city}</li>
+                                <li class="list-group-item" id="${customer.id}" coordX="${customer.coordinate.coordX}" coordY="${customer.coordinate.coordY}">${customer.id} - ${customer.postalCode} ${customer.city}</li>
                             </c:forEach>
                         </ul>
                     </div>
