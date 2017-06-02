@@ -82,7 +82,9 @@
                         </c:forEach>
                     </script>
                     
+                    <input type="button" id="refreshMap" value="Rafraîchir la carte" />
                     <div id="maps" style="float:left;width:100%;height:70%;"></div>
+                    
                 </div>
             </div>
         </div>
@@ -102,7 +104,11 @@
                                     routeDetail.position = ${route.position};
                                     routeDetail.coordX = ${route.location.coordinate.coordX};
                                     routeDetail.coordY = ${route.location.coordinate.coordY};
-                                    
+                                    routeDetail.locationType = '${route.locationType}';
+                                    routeDetail.locationId = '${route.location.id}';
+                                    routeDetail.postalCode = ${route.location.postalCode};
+                                    routeDetail.city = '${route.location.city}';
+                                        
                                     var routeMap = routes.get(routeDetail.tour);
                                     if (!routeMap) routeMap = new Array();
                                     routeMap.push(routeDetail);

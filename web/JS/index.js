@@ -12,6 +12,8 @@ $(document).on("click", ".list-group-item", function onClickList() {
             break;
             
         case 'clients':
+            initialize();
+            
             var coordX = $(this).attr("coordX");
             var coordY = $(this).attr("coordY");
             var latlng = new google.maps.LatLng(coordY, coordX);
@@ -27,6 +29,9 @@ $(document).on("click", ".list-group-item", function onClickList() {
     }
 });
 
+$(document).on("click", "#refreshMap", function onClickList() {
+    initialize();
+});
 
 var directionDisplay;
 var directionsService = new google.maps.DirectionsService();
@@ -43,7 +48,7 @@ var routes = new Map();
 function initialize() {
     var latlng;
     var i;
-    
+
     directionsDisplay = new google.maps.DirectionsRenderer();
     map = new google.maps.Map(document.getElementById("maps"), {});
     infowindow = new google.maps.InfoWindow(); 
@@ -125,7 +130,7 @@ function calcItineraire(id) {
     
     directionsDisplay = new google.maps.DirectionsRenderer({});
     directionsDisplay.setMap(map);
-
+console.log(routes);
     var routeInfos = routes.get(parseInt(id));
 
     var start = new google.maps.LatLng(routeInfos[0].coordY, routeInfos[0].coordX);
