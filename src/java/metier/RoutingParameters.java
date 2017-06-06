@@ -1,5 +1,8 @@
 package metier;
 
+import dao.DaoFactory;
+import dao.PersistenceType;
+import dao.RoutingParametersDao;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.Basic;
@@ -220,5 +223,10 @@ public class RoutingParameters implements Serializable {
                 + ", bodyCapacity=" + bodyCapacity 
                 + ", operatingTime=" + operatingTime 
                 + "}";
+    }
+    
+    public RoutingParameters find() {
+        RoutingParametersDao routingParametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
+        return routingParametersManager.find();
     }
 }

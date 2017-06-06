@@ -8,7 +8,11 @@ var infowindows;
 var depots = new Array();
 var swapLocations = new Array();
 var customers = new Array();
+var tours = new Map();
 var routes = new Map();
+
+var tourCapacity;
+var tourOperatingTime;
 
 $(document).on("click", ".list-group-item", function onClickList() {
     var type = $(this).parent().attr('id');
@@ -19,6 +23,8 @@ $(document).on("click", ".list-group-item", function onClickList() {
         case 'camions':
             var idTour = $(this).attr("id");
             document.getElementById("selection").innerHTML = "Tourn&eacute;e " + idTour;
+            document.getElementById("maps").className = "mapSlim";
+            document.getElementById("tourInfos").className = "tourInfosShow";
             
             calcItineraire(idTour);
             
@@ -32,6 +38,8 @@ $(document).on("click", ".list-group-item", function onClickList() {
             
             var idCustomer = $(this).attr("id");
             document.getElementById("selection").innerHTML = "Client " + idCustomer;
+            document.getElementById("maps").className = "mapLarge";
+            document.getElementById("tourInfos").className = "tourInfosHide";
             
             var coordX = $(this).attr("coordX");
             var coordY = $(this).attr("coordY");
@@ -104,7 +112,7 @@ function calcItineraire(id) {
     map = new google.maps.Map(document.getElementById("maps"), {});
     map.setZoom(4);
     
-    directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
+    directionsDisplay = new google.maps.DirectionsRenderer({ suppressMarkers: true });
     directionsDisplay.setMap(map);
 
     var routeInfos = routes.get(parseInt(id));
@@ -142,12 +150,12 @@ function calcItineraire(id) {
     /* POINT DE DÉPART */
     location = routeInfos[routeInfos.length - 1];
     title = "D&eacute;p&ocirc;t " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
-    createMarker(map, end, title, "http://maps.gstatic.com/mapfiles/markers2/marker_greenD.png");
+    createMarker(map, end, title, 'http://maps.google.com/mapfiles/ms/icons/red-dot.png');
     
     /* POINT D'ARRIVÉE */
     location = routeInfos[0];
     title = "D&eacute;p&ocirc;t " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
-    createMarker(map, start, title, "http://maps.gstatic.com/mapfiles/markers2/marker_greenD.png");
+    createMarker(map, start, title, 'http://maps.google.com/mapfiles/ms/icons/red-dot.png');
     
     /* ÉTAPES */
     for (var i = 1; i < waypts.length - 1; i++) {
@@ -162,9 +170,27 @@ function calcItineraire(id) {
             title = "Client " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
         }
         
-        createMarker(map, waypts[i].location, title, "http://www.google.com/mapfiles/marker_yellow.png");
+        createMarker(map, waypts[i].location, title, 'http://maps.google.com/mapfiles/ms/icons/green-dot.png');
         
     }
+
+    var tour = tours.get(parseInt(id));
+    
+    var tourQuantity = tour[0].quantity;
+    var tourTime = tour[0].time / 60;
+    var tourTotalCost = tour[0].totalCost;
+    
+    document.getElementById("tourFilling").innerHTML = tourQuantity + " / " + (routeInfos[0].trailer ? 2 * tourCapacity : tourCapacity) + " unités";
+    document.getElementById("tourTransitTime").innerHTML = tourTime.toFixed(2) + " / " + tourOperatingTime.toFixed(2) + " minutes";
+    document.getElementById("tourTotalCost").innerHTML = tourTotalCost.toFixed(2) + " €";
+    
+    moveProgressBar(
+            "tourFillingProgress", 
+            tourQuantity / (routeInfos[0].trailer ? 2 * tourCapacity : tourCapacity) * 100);
+            
+    moveProgressBar(
+            "tourTransitTimeProgress", 
+            tourTime / tourOperatingTime * 100);
 }
 
 function createMarker(map, latlng, label, icon) {
@@ -180,4 +206,21 @@ function createMarker(map, latlng, label, icon) {
         infowindow.setContent(marker.title);
         infowindow.open(map, marker);
     });
+}
+
+function moveProgressBar(barName, value) {
+
+    var elem = document.getElementById(barName); 
+    var width = value > 100 ? 100 : value;
+    
+    elem.style.width = width + '%';
+    elem.innerHTML = value.toFixed(2) + ' %';
+    
+    if (value > 100) {
+        elem.style.backgroundColor = "darkred";
+    } else if (value < 50) {
+        elem.style.backgroundColor = "darkorange";
+    } else {
+        elem.style.backgroundColor = "green";
+    }
 }

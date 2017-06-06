@@ -27,7 +27,8 @@
         <jsp:useBean id="customers" class="metier.Customer" />
         <jsp:useBean id="tours" class="metier.Tour" />
         <jsp:useBean id="route" class="metier.Route" />
-    
+        <jsp:useBean id="parameters" class="metier.RoutingParameters" />
+        
         <div class="navbar navbar-default navbar-static-top">
             <div class="container">
                 <div class="navbar-header">
@@ -80,6 +81,19 @@
                             
                             customers.push(customerDetail);
                         </c:forEach>
+                        <c:forEach items="${tours.allTours()}" var="tour">
+                            var tourDetail = new Object();
+                            tourDetail.id = ${tour.id};
+                            tourDetail.quantity = ${tour.getTourQuantity()};
+                            tourDetail.time = ${tour.getTourTime()};
+                            tourDetail.totalCost = ${tour.getTotalCost()};
+                            
+                            var tourMap = tours.get(tourDetail.id);
+                            if (!tourMap) tourMap = new Array();
+                            tourMap.push(tourDetail);
+                            
+                            tours.set(tourDetail.id, tourMap);
+                        </c:forEach>
                         <c:forEach items="${route.allRoutes()}" var="route">
                             var routeDetail = new Object();
                             routeDetail.tour = ${route.tour.id};
@@ -90,6 +104,7 @@
                             routeDetail.locationId = '${route.location.id}';
                             routeDetail.postalCode = ${route.location.postalCode};
                             routeDetail.city = '${route.location.city}';
+                            routeDetail.trailer = ${route.trailerAttached};
 
                             var routeMap = routes.get(routeDetail.tour);
                             if (!routeMap) routeMap = new Array();
@@ -97,12 +112,30 @@
 
                             routes.set(routeDetail.tour, routeMap);
                         </c:forEach>
+                            
                     </script>
-                    
+
                     <input type="button" id="refreshMap" value="Rafraîchir la carte" />
                     <h2 id="selection" style="text-align: center;"></h2>
-                    <div id="maps" style="float:left;width:100%;height:70%;"></div>
-                    
+                    <div id="maps" class="mapLarge"></div>
+                    <div id="tourInfos" class="tourInfosHide">
+                        <script>
+                            tourCapacity = ${parameters.find().bodyCapacity};
+                            tourOperatingTime = ${parameters.find().operatingTime / 60};
+                        </script>
+                        <h3>Remplissage du camion</h3>
+                        <p id="tourFilling"></p>
+                        <div id="progressBar">
+                            <div id="tourFillingProgress"></div>
+                        </div>
+                        <h3>Temps de parcours</h3>
+                        <p id="tourTransitTime"></p>
+                        <div id="progressBar">
+                            <div id="tourTransitTimeProgress"></div>
+                        </div>
+                        <h3>Coût total</h3>
+                        <p id="tourTotalCost"></p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -114,15 +147,8 @@
                         <ul id="camions" class="list-group">
                             <c:forEach items="${tours.allTours()}" var="tour">
                                 <li class="list-group-item" id="${tour.id}">
-                                    Tournée ${tour.id} 
-                                    (
-                                    <c:forEach items="${tour.listRoutes}" var="route">
-                                         ${route.location.id} 
-                                    </c:forEach>
-                                    )
+                                    Tournée ${tour.id}
                                 </li>
-                                
-                                
                             </c:forEach>
                         </ul>
                     </div>
@@ -130,7 +156,9 @@
                         <h3>Clients (${customers.allCustomers().size()})</h3>
                         <ul id="clients" class="list-group">
                             <c:forEach items="${customers.allCustomers()}" var="customer">
-                                <li class="list-group-item" id="${customer.id}" coordX="${customer.coordinate.coordX}" coordY="${customer.coordinate.coordY}">${customer.id} - ${customer.postalCode} ${customer.city}</li>
+                                <li class="list-group-item" id="${customer.id}" coordX="${customer.coordinate.coordX}" coordY="${customer.coordinate.coordY}">
+                                    ${customer.id} - ${customer.postalCode} ${customer.city}
+                                </li>
                             </c:forEach>
                         </ul>
                     </div>

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -245,5 +246,60 @@ public class Tour implements Serializable {
         }
         
         return quantity;
+    }
+    
+    public double getTotalCost() throws Exception {
+        double total = 0;
+        
+        double distanceTour = 0;
+        double distanceFirstTrailer = 0;
+        double distanceSecondTrailer = 0;
+        
+        CoordinatesCalc coordCalc = new CoordinatesCalc();
+        
+        Iterator it = this.listRoutesOrdered().iterator();
+        
+        Route routeFrom = (Route) it.next();
+        Route routeTo;
+        
+        while (it.hasNext()) {
+            routeTo = (Route) it.next();
+            
+            double distance = coordCalc.getDistanceBetweenCoord(routeFrom.getLocation().getCoordinate(), routeTo.getLocation().getCoordinate());
+            distanceTour += distance;
+            
+            if (routeFrom.isTrailerAttached()) {
+                distanceFirstTrailer += distance;
+                distanceSecondTrailer += distance;
+            } else if (routeFrom.getFirstTrailer() == 1) {
+                distanceFirstTrailer += distance;
+            } else if (routeFrom.getFirstTrailer() == 2) {
+                distanceSecondTrailer += distance;
+            }
+        }
+        
+        total += calcTruckCost(distanceTour, this.getTourTime());
+        total += calcTrailerCost(distanceFirstTrailer, this.getTourTime());
+        total += calcTrailerCost(distanceSecondTrailer, this.getTourTime());
+        
+        return total;
+    }
+    
+    public double calcTruckCost(double distance, double time) {
+        RoutingParametersDao routingParametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
+        RoutingParameters parameters = routingParametersManager.find();
+        
+        return parameters.getTruckUsageCost()
+                + (parameters.getTruckDistanceCost() * (distance / 100)) 
+                + (parameters.getTruckTimeCost() * (time / 3600));
+    }
+    
+    public double calcTrailerCost(double distance, double time) {
+        RoutingParametersDao routingParametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
+        RoutingParameters parameters = routingParametersManager.find();
+        
+        return parameters.getTrailerUsageCost()
+                + (parameters.getTrailerDistanceCost() * (distance / 100)) 
+                + (parameters.getTrailerTimeCost() * (time / 3600));
     }
 }
