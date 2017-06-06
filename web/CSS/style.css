@@ -8,6 +8,39 @@ html {
 body {
   margin: 0;
 }
+.mapLarge {
+    float: left;
+    width: 100%;
+    height: 70%;
+    
+}
+.mapSlim {
+    float: left;
+    width: 75%;
+    height: 70%;
+}
+.tourInfosShow {
+    float: left;
+    width: 25%;
+    height: 70%;
+    text-align: center;
+    display: block;
+}
+.tourInfosHide {
+    display: none;
+}
+#progressBar {
+    margin: auto;
+    width: 80%;
+    background-color: grey;
+}
+#tourFillingProgress, #tourTransitTimeProgress {
+    width: 1%;
+    height: 30px;
+    background-color: green;
+    color: white;
+    line-height: 30px;
+}
 article,
 aside,
 details,
