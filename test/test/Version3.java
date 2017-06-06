@@ -71,10 +71,10 @@ public class Version3 {
         //ImportBase.importLocations(filePath + fileNameLocations);
         
         // Algorithme de création des tournées
-        test.scanCustomerRequests();
+       // test.scanCustomerRequests();
         
         // Exportation de la solution
-        test.createSolution();
+       // test.createSolution();
     }
     
     public void initialize() throws DaoException {

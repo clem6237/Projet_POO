@@ -99,8 +99,8 @@ public class Customer extends Location implements Serializable, Comparable<Custo
             CoordinatesCalc calc = new CoordinatesCalc();
             double distanceC1 = 0.0, distanceC2 = 0.0;
             try {
-                distanceC1 = calc.getTotalTimeBetweenCoord(this.getCoordinate(), coordDepot);
-                distanceC2 = calc.getTotalTimeBetweenCoord(o.getCoordinate(), coordDepot);
+                distanceC1 = calc.getTimeBetweenCoord(this.getCoordinate(), coordDepot);
+                distanceC2 = calc.getTimeBetweenCoord(o.getCoordinate(), coordDepot);
             } catch (Exception ex) {
                 Logger.getLogger(Customer.class.getName()).log(Level.SEVERE, null, ex);
             }
