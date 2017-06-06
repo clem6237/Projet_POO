@@ -2,6 +2,7 @@ package metier;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +60,41 @@ public class Tour implements Serializable {
     }
 
     public List<Route> getListRoutes() {
+        Collections.sort(this.listRoutes);
         return listRoutes;
+    }
+    
+    public Route getFirstCustomer() {
+        Collections.sort(this.listRoutes);
+        for(Route r : this.listRoutes) {
+            if(r.getLocationType() == LocationType.CUSTOMER)
+                return r;
+        }
+        return null;
+    }
+    
+    public Route getLastRoute() {
+        Collections.sort(this.listRoutes);
+        Collections.reverse(this.listRoutes);
+        return this.listRoutes.get(0);
+    }
+    
+    public SwapLocation getSwapLocation() {
+        Collections.sort(this.listRoutes);
+        for(Route r : this.getListRoutes()) {
+            if(r.getLocationType() == LocationType.SWAP_LOCATION)
+                return (SwapLocation) r.getLocation();
+        }
+        return null;
+    }
+    
+    public int getPositionOfSwap() {
+        Collections.sort(this.listRoutes);
+        for(Route r : this.getListRoutes()) {
+            if(r.getLocationType() == LocationType.SWAP_LOCATION)
+                return r.getPosition();
+        }
+        return 0;
     }
 
     public void setListRoutes(List<Route> listRoutes) {

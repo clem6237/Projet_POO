@@ -1,6 +1,12 @@
 package metier;
 
+import dao.DaoFactory;
+import dao.DepotDao;
+import dao.PersistenceType;
 import java.io.Serializable;
+import java.util.Comparator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,6 +14,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import utils.CoordinatesCalc;
 
 /**
  *
@@ -20,7 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Customer.findAll", query = "SELECT c FROM Customer c"),
     @NamedQuery(name = "Customer.findById", query = "SELECT c FROM Customer c WHERE c.id = :id"),
 })
-public class Customer extends Location implements Serializable {
+public class Customer extends Location implements Serializable, Comparable<Customer> {
     @Basic(optional = false)
     @Column(name = "ORDEREDQTY")
     private double orderedQty;
@@ -66,7 +73,7 @@ public class Customer extends Location implements Serializable {
     public void setServiceTime(double serviceTime) {
         this.serviceTime = serviceTime;
     }
-    
+ 
     @Override
     public String toString() {
         return "Customer { " 
@@ -78,5 +85,32 @@ public class Customer extends Location implements Serializable {
                 + ", accessible=" + accessible
                 + ", serviceTime=" + serviceTime
                 + " } \n";
+    }
+
+    @Override
+    public int compareTo(Customer o) {
+        DepotDao depotManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getDepotDao();
+        Coordinate coordDepot = depotManager.find().getCoordinate();
+        
+       /* if(this.isAccessible() != o2.isAccessible()) {
+            return ! o1.isAccessible() ? - 1 : 1;
+        } else {*/
+            CoordinatesCalc calc = new CoordinatesCalc();
+            double distanceC1 = 0.0, distanceC2 = 0.0;
+            try {
+                distanceC1 = calc.getTotalTimeBetweenCoord(this.getCoordinate(), coordDepot);
+                distanceC2 = calc.getTotalTimeBetweenCoord(o.getCoordinate(), coordDepot);
+            } catch (Exception ex) {
+                Logger.getLogger(Customer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            //Lequel est le plus proche du dépot     
+            int distanceComp = Double.compare(distanceC1, distanceC2);
+            if(distanceComp == 0) {
+                //S'il sont à la même distance
+                return Double.compare(this.getOrderedQty(), o.getOrderedQty());
+            } else 
+                return distanceComp;
+       // }      
     }
 }

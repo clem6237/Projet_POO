@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Route.findByTour", query = "SELECT r FROM Route r WHERE r.tour = :tour"),
     @NamedQuery(name = "Route.findByTourPosition", query = "SELECT r FROM Route r WHERE r.tour = :tour AND r.position = :position")
 })
-public class Route implements Serializable {
+public class Route implements Serializable, Comparable<Route> {
     private static final long serialVersionUID = 1L;
     
     @Id
@@ -201,6 +201,11 @@ public class Route implements Serializable {
             return false;
         }
         return true;
+    }
+    
+    @Override
+    public int compareTo(Route o) {
+          return Integer.compare(this.getPosition(), o.getPosition());
     }
 
     @Override

@@ -1,6 +1,8 @@
 package dao;
 
+import java.util.Collection;
 import javax.persistence.Query;
+import metier.Customer;
 import metier.SwapLocation;
 
 /**
@@ -35,5 +37,12 @@ public class JpaSwapLocationDao extends JpaDaoT<SwapLocation> implements SwapLoc
         } catch (Exception e) {
             throw new DaoException("Error during deleteAll", e);
         }
+    }
+    
+    @Override
+    public Collection<SwapLocation> findAll() {
+        Query query = em.createNamedQuery("SwapLocation.findAll"); 
+        
+        return (Collection<SwapLocation>) query.getResultList();
     }
 }
