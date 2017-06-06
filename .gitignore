@@ -7,3 +7,5 @@ build/web/WEB-INF/classes/*
 build/web/gfv3ee6.dpf
 *.xml
 Projet2017/*
+nbproject/project.properties
+nbproject/project.xml
