@@ -4,9 +4,10 @@ import dao.DaoFactory;
 import dao.DepotDao;
 import dao.PersistenceType;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import dao.CustomerDao;
+import java.util.Collection;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -112,5 +113,10 @@ public class Customer extends Location implements Serializable, Comparable<Custo
             } else 
                 return distanceComp;
        // }      
+    }    
+            
+    public Collection<Customer> allCustomers() {
+        CustomerDao customerManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCustomerDao();
+        return customerManager.findAll();
     }
 }

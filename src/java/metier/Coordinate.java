@@ -90,10 +90,7 @@ public class Coordinate implements Serializable {
             return false;
         }
         final Coordinate other = (Coordinate) obj;
-        if (this.id != other.id) {
-            return false;
-        }
-        return true;
+        return this.id == other.id;
     }
 
     @Override

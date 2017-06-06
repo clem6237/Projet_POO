@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Collection;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -23,7 +24,7 @@ import utils.CoordinatesCalc;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "SwapLocation.findAll", query = "SELECT c FROM SwapLocation c"),
-    @NamedQuery(name = "SwapLocation.findById", query = "SELECT c FROM SwapLocation c WHERE c.id = :id"),
+    @NamedQuery(name = "SwapLocation.findById", query = "SELECT c FROM SwapLocation c WHERE c.id = :id")
 })
 public class SwapLocation extends Location implements Serializable {
     
@@ -66,11 +67,16 @@ public class SwapLocation extends Location implements Serializable {
     
     @Override
     public String toString() {
-        return "Customer { " 
+        return "SwapLocation { " 
                 + "id=" + this.getId() 
                 + ", postalCode=" + this.getPostalCode() 
                 + ", city=" + this.getCity() 
                 + ", coordinate=" + this.getCoordinate()
                 + " } \n";
+    }
+    
+    public Collection<SwapLocation> allSwapLocations() {
+        SwapLocationDao swapLocationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getSwapLocationDao();
+        return swapLocationManager.findAll();
     }
 }

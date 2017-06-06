@@ -1,5 +1,6 @@
 package dao;
 
+import java.util.Collection;
 import metier.Route;
 import metier.Tour;
 
@@ -8,6 +9,6 @@ import metier.Tour;
  * @author clementruffin
  */
 public interface RouteDao extends DaoT<Route> {
-    public Route findByTour(Tour tour);
+    public Collection<Route> findByTour(Tour tour);
     public Route findByTourPosition(Tour tour, int position);
 }

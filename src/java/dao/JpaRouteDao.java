@@ -48,11 +48,11 @@ public class JpaRouteDao extends JpaDaoT<Route> implements RouteDao {
     }
 
     @Override
-    public Route findByTour(Tour tour) {
+    public Collection<Route> findByTour(Tour tour) {
         Query query = em.createNamedQuery("Route.findByTour"); 
         query.setParameter("tour", tour);
         
-        return (Route) query.getResultList();
+        return (Collection<Route>) query.getResultList();
     }
 
     @Override
@@ -61,6 +61,6 @@ public class JpaRouteDao extends JpaDaoT<Route> implements RouteDao {
         query.setParameter("tour", tour);
         query.setParameter("position", position);
         
-        return (Route) query.getResultList();
+        return (Route) query.getSingleResult();
     }
 }

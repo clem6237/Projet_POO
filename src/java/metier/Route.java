@@ -1,6 +1,10 @@
 package metier;
 
+import dao.DaoFactory;
+import dao.PersistenceType;
+import dao.RouteDao;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -26,7 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Route.findAll", query = "SELECT r FROM Route r ORDER BY r.tour, r.position ASC"),
-    @NamedQuery(name = "Route.findByTour", query = "SELECT r FROM Route r WHERE r.tour = :tour"),
+    @NamedQuery(name = "Route.findByTour", query = "SELECT r FROM Route r WHERE r.tour = :tour ORDER BY r.position ASC"),
     @NamedQuery(name = "Route.findByTourPosition", query = "SELECT r FROM Route r WHERE r.tour = :tour AND r.position = :position")
 })
 public class Route implements Serializable, Comparable<Route> {
@@ -197,10 +201,7 @@ public class Route implements Serializable, Comparable<Route> {
         if (this.position != other.position) {
             return false;
         }
-        if (!Objects.equals(this.tour, other.tour)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.tour, other.tour);
     }
     
     @Override
@@ -220,5 +221,10 @@ public class Route implements Serializable, Comparable<Route> {
                 + ", qty1=" + qty1 
                 + ", qty2=" + qty2 
                 + " }\n";
+    }
+    
+    public Collection<Route> allRoutes() {
+        RouteDao routeManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRouteDao();
+        return routeManager.findAll();
     }
 }

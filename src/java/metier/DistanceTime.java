@@ -125,10 +125,7 @@ public class DistanceTime implements Serializable {
         if (!Objects.equals(this.coordFrom, other.coordFrom)) {
             return false;
         }
-        if (!Objects.equals(this.coordTo, other.coordTo)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.coordTo, other.coordTo);
     }
 
     @Override

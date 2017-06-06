@@ -38,11 +38,12 @@ public class JpaSwapLocationDao extends JpaDaoT<SwapLocation> implements SwapLoc
             throw new DaoException("Error during deleteAll", e);
         }
     }
-    
+
     @Override
     public Collection<SwapLocation> findAll() {
         Query query = em.createNamedQuery("SwapLocation.findAll"); 
         
         return (Collection<SwapLocation>) query.getResultList();
     }
+
 }
