@@ -3,6 +3,7 @@ package metier;
 import dao.DaoFactory;
 import dao.PersistenceType;
 import dao.RouteDao;
+import dao.RoutingParametersDao;
 import dao.TourDao;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -101,6 +102,15 @@ public class Tour implements Serializable {
         }
         return 0;
     }
+    
+    public Route getSwapLocationOfSwap() {
+        Collections.sort(this.listRoutes);
+        for(Route r : this.getListRoutes()) {
+            if(r.getLocationType() == LocationType.SWAP_LOCATION && r.getSwapAction() == SwapAction.SWAP)
+                return r;
+        }
+        return null;
+    }
 
     public void setListRoutes(List<Route> listRoutes) {
         this.listRoutes = listRoutes;
@@ -146,32 +156,55 @@ public class Tour implements Serializable {
         return routeManager.findByTour(this);
     }
     
-    public double getTourTime() {
+    public double getTourTime() throws Exception {
         CoordinatesCalc calc = new CoordinatesCalc();
+        
+        RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
+        RoutingParameters parameters = parametersManager.find();
         
         Coordinate lastCoordinate = null;
         double timeTotal = 0;
         
+        double serv = 0.0, swap = 0.0;
         for(Route r : this.listRoutes) {
             Location l = r.getLocation();
             //Si c'est un client, on ajoute le temps de service
             if(r.getLocationType() == LocationType.CUSTOMER) {
                 Customer c = (Customer) r.getLocation();
                 timeTotal += c.getServiceTime();
+                serv += c.getServiceTime();
+            } else if(r.getLocationType() == LocationType.SWAP_LOCATION) {
+                switch(r.getSwapAction()) {
+                    case PARK:
+                        timeTotal += parameters.getParkTime();
+                        swap += parameters.getParkTime();
+                        break;
+                    case PICKUP:
+                        timeTotal += parameters.getPickupTime();
+                        swap += parameters.getPickupTime();
+                        break;
+                    case SWAP:
+                        timeTotal += parameters.getSwapTime();
+                        swap += parameters.getSwapTime();
+                        break;
+                    case EXCHANGE:
+                        timeTotal += parameters.getExchangeTime();
+                        swap += parameters.getExchangeTime();
+                        break;
+                        
+                }
             }
             
             if(lastCoordinate != null) {
-                try {
-                    timeTotal += calc.getTotalTimeBetweenCoord(lastCoordinate, l.getCoordinate());
-                } catch (Exception ex) {
-                    Logger.getLogger(Tour.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                timeTotal += calc.getTimeBetweenCoord(lastCoordinate, l.getCoordinate());
                 lastCoordinate =  l.getCoordinate();
             } else {
                 lastCoordinate =  l.getCoordinate();
             }
         }
         
+        System.out.println("Service : "+serv);
+        System.out.println("SwapAction : "+swap);
         return timeTotal;
     }
     

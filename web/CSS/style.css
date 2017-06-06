@@ -4700,8 +4700,9 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 }
 .pager li > a:hover,
 .pager li > a:focus {
-  text-decoration: none;
-  background-color: #eeeeee;
+    text-decoration: none;
+    background-color: #eeeeee;
+    cursor: pointer;
 }
 .pager .next > a,
 .pager .next > span {
@@ -4713,10 +4714,12 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 /** Design du bouton de lancement **/
 .pager .next.end > a, .pager .next.end > span {
     background-color: #085394;
+    cursor: pointer;
     color: white;
 }
 .pager .next.end > a:hover, .pager .next.end > span:hover {
     background-color: #043b6b;
+    cursor: pointer;
     color: white;
 }
 
