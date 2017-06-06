@@ -180,7 +180,7 @@ function calcItineraire(id) {
     var tourTime = tour[0].time / 60;
     var tourTotalCost = tour[0].totalCost;
     
-    document.getElementById("tourFilling").innerHTML = tourQuantity + " / " + (routeInfos[0].trailer ? 2 * tourCapacity : tourCapacity) + " unités";
+    document.getElementById("tourFilling").innerHTML = tourQuantity + " / " + (routeInfos[0].trailer ? (2 * tourCapacity + " unités (mode train)") : (tourCapacity + " unités (mode camion)"));
     document.getElementById("tourTransitTime").innerHTML = tourTime.toFixed(2) + " / " + tourOperatingTime.toFixed(2) + " minutes";
     document.getElementById("tourTotalCost").innerHTML = tourTotalCost.toFixed(2) + " €";
     

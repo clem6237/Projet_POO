@@ -128,11 +128,13 @@
                         <div id="progressBar">
                             <div id="tourFillingProgress"></div>
                         </div>
+                        <hr/>
                         <h3>Temps de parcours</h3>
                         <p id="tourTransitTime"></p>
                         <div id="progressBar">
                             <div id="tourTransitTimeProgress"></div>
                         </div>
+                        <hr/>
                         <h3>Coût total</h3>
                         <p id="tourTotalCost"></p>
                     </div>

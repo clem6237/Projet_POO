@@ -26,6 +26,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 import utils.CoordinatesCalc;
+import utils.CostCalc;
 
 /**
  *
@@ -209,6 +210,70 @@ public class Tour implements Serializable {
         return timeTotal;
     }
     
+    public double getTourDistance() throws Exception {
+        CoordinatesCalc calc = new CoordinatesCalc();
+        
+        Coordinate lastCoordinate = null;
+        double distanceTotal = 0;
+        
+        for(Route r : this.listRoutes) {
+            Location l = r.getLocation();
+            
+            if (lastCoordinate != null) {
+                distanceTotal += calc.getDistanceBetweenCoord(lastCoordinate, l.getCoordinate());
+                lastCoordinate =  l.getCoordinate();
+            } else {
+                lastCoordinate =  l.getCoordinate();
+            }
+        }
+        
+        return distanceTotal;
+    }
+    
+    public double getFirstTrailerDistance() throws Exception {
+        CoordinatesCalc calc = new CoordinatesCalc();
+        
+        Coordinate lastCoordinate = null;
+        double distanceTotal = 0;
+        
+        for(Route r : this.listRoutes) {
+            Location l = r.getLocation();
+            
+            if (lastCoordinate != null) {
+                if (r.isTrailerAttached() || r.getFirstTrailer() == 1) {
+                    distanceTotal += calc.getDistanceBetweenCoord(lastCoordinate, l.getCoordinate());
+                    lastCoordinate =  l.getCoordinate();
+                }
+            } else {
+                lastCoordinate =  l.getCoordinate();
+            }
+        }
+        
+        return distanceTotal;
+    }
+    
+    public double getLastTrailerDistance() throws Exception {
+        CoordinatesCalc calc = new CoordinatesCalc();
+        
+        Coordinate lastCoordinate = null;
+        double distanceTotal = 0;
+        
+        for(Route r : this.listRoutes) {
+            Location l = r.getLocation();
+            
+            if (lastCoordinate != null) {
+                if (r.isTrailerAttached() || r.getFirstTrailer() == 2) {
+                    distanceTotal += calc.getDistanceBetweenCoord(lastCoordinate, l.getCoordinate());
+                    lastCoordinate =  l.getCoordinate();
+                }
+            } else {
+                lastCoordinate =  l.getCoordinate();
+            }
+        }
+        
+        return distanceTotal;
+    }
+    
     public double getTourQuantity() throws Exception {
         double quantity = 0;
         
@@ -251,55 +316,46 @@ public class Tour implements Serializable {
     public double getTotalCost() throws Exception {
         double total = 0;
         
-        double distanceTour = 0;
-        double distanceFirstTrailer = 0;
-        double distanceSecondTrailer = 0;
-        
-        CoordinatesCalc coordCalc = new CoordinatesCalc();
-        
-        Iterator it = this.listRoutesOrdered().iterator();
-        
-        Route routeFrom = (Route) it.next();
-        Route routeTo;
-        
-        while (it.hasNext()) {
-            routeTo = (Route) it.next();
-            
-            double distance = coordCalc.getDistanceBetweenCoord(routeFrom.getLocation().getCoordinate(), routeTo.getLocation().getCoordinate());
-            distanceTour += distance;
-            
-            if (routeFrom.isTrailerAttached()) {
-                distanceFirstTrailer += distance;
-                distanceSecondTrailer += distance;
-            } else if (routeFrom.getFirstTrailer() == 1) {
-                distanceFirstTrailer += distance;
-            } else if (routeFrom.getFirstTrailer() == 2) {
-                distanceSecondTrailer += distance;
-            }
-        }
-        
-        total += calcTruckCost(distanceTour, this.getTourTime());
-        total += calcTrailerCost(distanceFirstTrailer, this.getTourTime());
-        total += calcTrailerCost(distanceSecondTrailer, this.getTourTime());
+        total += this.getTotalTruckCost(this.getTourDistance(), this.getTourTime());
+        total += this.getTotalTrailerCost(this.getFirstTrailerDistance(), 0);
+        total += this.getTotalTrailerCost(this.getLastTrailerDistance(), 0);
         
         return total;
     }
     
-    public double calcTruckCost(double distance, double time) {
-        RoutingParametersDao routingParametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
-        RoutingParameters parameters = routingParametersManager.find();
-        
-        return parameters.getTruckUsageCost()
-                + (parameters.getTruckDistanceCost() * (distance / 100)) 
-                + (parameters.getTruckTimeCost() * (time / 3600));
+    public double getTotalTruckCost(double distance, double time) {
+        return getTruckUsageCost()
+                + getTruckDistanceCost(distance) 
+                + getTruckTimeCost(time);
     }
     
-    public double calcTrailerCost(double distance, double time) {
-        RoutingParametersDao routingParametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
-        RoutingParameters parameters = routingParametersManager.find();
-        
-        return parameters.getTrailerUsageCost()
-                + (parameters.getTrailerDistanceCost() * (distance / 100)) 
-                + (parameters.getTrailerTimeCost() * (time / 3600));
+    public double getTruckUsageCost() {
+        return new CostCalc().getTruckUsageCost();
+    }
+    
+    public double getTruckDistanceCost(double distance) {
+        return new CostCalc().getTruckDistanceCost(distance);
+    }
+    
+    public double getTruckTimeCost(double time) {
+        return new CostCalc().getTruckTimeCost(time);
+    }
+    
+    public double getTotalTrailerCost(double distance, double time) {
+        return getTrailerUsageCost()
+                + getTrailerDistanceCost(distance) 
+                + getTrailerTimeCost(time);
+    }
+    
+    public double getTrailerUsageCost() {
+        return new CostCalc().getTrailerUsageCost();
+    }
+    
+    public double getTrailerDistanceCost(double distance) {
+        return new CostCalc().getTrailerDistanceCost(distance);
+    }
+    
+    public double getTrailerTimeCost(double time) {
+        return new CostCalc().getTrailerTimeCost(time);
     }
 }
