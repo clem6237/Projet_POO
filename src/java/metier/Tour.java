@@ -88,7 +88,6 @@ public class Tour implements Serializable {
     }
     
     public SwapLocation getSwapLocation() {
-        Collections.sort(this.listRoutes);
         for(Route r : this.getListRoutes()) {
             if(r.getLocationType() == LocationType.SWAP_LOCATION)
                 return (SwapLocation) r.getLocation();
@@ -97,7 +96,6 @@ public class Tour implements Serializable {
     }
     
     public int getPositionOfSwap() {
-        Collections.sort(this.listRoutes);
         for(Route r : this.getListRoutes()) {
             if(r.getLocationType() == LocationType.SWAP_LOCATION && r.getSwapAction() == SwapAction.SWAP)
                 return r.getPosition();
@@ -106,7 +104,6 @@ public class Tour implements Serializable {
     }
     
     public Route getSwapLocationOfSwap() {
-        Collections.sort(this.listRoutes);
         for(Route r : this.getListRoutes()) {
             if(r.getLocationType() == LocationType.SWAP_LOCATION && r.getSwapAction() == SwapAction.SWAP)
                 return r;

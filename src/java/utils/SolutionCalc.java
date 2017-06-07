@@ -92,26 +92,17 @@ public class SolutionCalc {
                     //Si le camion a une remorque
                     boolean attached = ((Route) tour.getListRoutes().get(tour.getListRoutes().size() - 1)).isTrailerAttached();
 
-                    if (qty1Total < parameters.getBodyCapacity() && !attached) {
-                        //Vérifie si on a le tps avant d'aller au SwapLocation
+                    if ((qty1Total < parameters.getBodyCapacity() && !attached) || (tourTotal < parameters.getBodyCapacity() * 2 && attached && customer.isAccessible())) {
+                        //Vérifie si on a le tps
                         if(canAddCostumer(tour, customer)) {
                             //Ajoute la route      
                             addCustumer(tour, customer, true);
                             isServe = true;
                             break;                            
                         }
-                    } else if(tourTotal < parameters.getBodyCapacity() * 2 && attached && customer.isAccessible()) {
-                        if(canAddCostumer(tour, customer)) {
-                            //Ajoute la route      
-                            addCustumer(tour, customer, true);
-                            isServe = true;
-                            break;                            
-                        }
-                    } else {
-                        double qty2Total = tour.getLastTrailerQuantity() + customer.getOrderedQty();
-                        
+                    } else if(qty1Total > parameters.getBodyCapacity() && (tour.getLastTrailerQuantity() + customer.getOrderedQty()) <= parameters.getBodyCapacity() && !attached){                        
                         //Si il n'y a plus de place dans la remorque 1 et que l'on a pas de 2éme remorque
-                        if(qty1Total > parameters.getBodyCapacity() && qty2Total <= parameters.getBodyCapacity() && tour.getLastTrailerQuantity() == 0 && !attached){ 
+                        if(tour.getLastTrailerQuantity() == 0){ 
                             //Si le camion a le temps de faire toute les actions
                             SwapLocation swapLocation = canGoToSwapLocation(tour, customer);
                             
@@ -120,7 +111,7 @@ public class SolutionCalc {
                                 isServe = true;
                                 break;
                             }
-                        } else if(qty1Total > parameters.getBodyCapacity() && qty2Total <= parameters.getBodyCapacity() && tour.getLastTrailerQuantity() != 0 && !attached) { //Si on a que le deuxième remorque
+                        } else { //Si on a que le deuxième remorque
                             //Récupérer le SwapLocation
                             SwapLocation sp = tour.getSwapLocation();
                             
@@ -479,6 +470,8 @@ public class SolutionCalc {
         Depot depot = depotManager.find();
         
         List<Route> listRoutes = t.getListRoutes();
+        Route last = t.getLastRoute();
+            
         boolean attachTrailer = false;
         int firstTrailer = 1;
         int lastTrailer = 0;
@@ -489,8 +482,6 @@ public class SolutionCalc {
             attachTrailer = true;
             firstTrailer = 2;
             lastTrailer = 1;
-            
-            Route last = listRoutes.get(listRoutes.size() - 1);
             
             //Dans état précédent
             Route route = new Route();
@@ -507,10 +498,9 @@ public class SolutionCalc {
             listRoutes.add(route);
         }
         
-        Route r = (Route) t.getLastRoute();
-        if(r.isTrailerAttached()) {
+        if(last.isTrailerAttached()) {
             attachTrailer = true;
-            lastTrailer = r.getLastTrailer();
+            lastTrailer = last.getLastTrailer();
         }
         
         Route route = new Route();
@@ -531,12 +521,9 @@ public class SolutionCalc {
     }
     
     public double getTimeReturn(Coordinate coordinate) throws Exception {
-        Depot depot = depotManager.find();
-        Coordinate coordDepot = depot.getCoordinate();
-        
+        Depot depot = depotManager.find();        
         CoordinatesCalc calc = new CoordinatesCalc();
                 
-        return calc.getTimeBetweenCoord(coordinate, coordDepot);
+        return calc.getTimeBetweenCoord(coordinate, depot.getCoordinate());
     }
-    
 }
