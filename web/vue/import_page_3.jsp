@@ -63,10 +63,11 @@
         }
     });
 </script>
+<div id="helpBox" class="helpBoxHide"></div>
 
 <div id="loading" style="display: none; text-align: center;">
     <img id="loading-img" src="./IMG/loading.gif" />
-    <h2>Chargement en cours <img height="40px" src="./IMG/dots-loader.gif"/></h2>
+    <h2>Chargement en cours <img height="50px" src="./IMG/dots-loader.gif"/></h2>
 </div>
 
 <div class="container">
@@ -81,7 +82,8 @@
                 <div class="container">
                     <h1 class="text-primary">Import du fichier de localisation</h1>
                     <br/>
-                    <label>Fichier de localisation <span class="obligatory">*</span></label><br/>
+                    <label>Fichier de localisation <span class="obligatory">*</span></label>
+                    <img class="helpFile" src="./IMG/help.png" onmouseover="showHelp('locations')" onmouseout="hideHelp()"/><br/>
                     <input type="file" name="locations" pattern="*.csv" accept=".csv"/><br/>
                 </div>
                 <ul class="pager">

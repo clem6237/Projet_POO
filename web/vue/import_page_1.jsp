@@ -13,6 +13,8 @@
         }
     });
 </script>
+<div id="helpBox" class="helpBoxHide"></div>
+
 <div class="container">
     <div class="row">
         <div class="col-md-12">
@@ -25,10 +27,12 @@
                 <div class="container">
                     <h1 class="text-primary">Import du fichier des coordonnées et des distances</h1>
                     <br/>
-                    <label>Fichier des coordonnées</label><br/>
+                    <label>Fichier des coordonnées</label>
+                    <img class="helpFile" src="./IMG/help.png" onmouseover="showHelp('coordinates')" onmouseout="hideHelp()"/><br/>
                     <input type="file" name="coordinates" accept=".csv" /><br/>
                     <br/>
-                    <label>Fichier des distances</label><br/>
+                    <label>Fichier des distances</label>
+                    <img class="helpFile" src="./IMG/help.png" onmouseover="showHelp('distances')" onmouseout="hideHelp()"/><br/><br/>
                     <input type="file" name="distances" accept=".csv" /><br/>
                 </div>
                 <ul class="pager">
