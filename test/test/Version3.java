@@ -71,10 +71,10 @@ public class Version3 {
         //ImportBase.importLocations(filePath + fileNameLocations);
         
         // Algorithme de création des tournées
-       // test.scanCustomerRequests();
+        test.scanCustomerRequests();
         
         // Exportation de la solution
-       // test.createSolution();
+        test.createSolution();
     }
     
     public void initialize() throws DaoException {
@@ -123,70 +123,72 @@ public class Version3 {
                 boolean isServe = false;
                 while (iter.hasNext()) {
                     Tour tour = iter.next();
-       
-                    //Vérifie si le client peut être livré à temps
-                    double tpsCustomer = tour.getTourTime() 
-                            + calc.getTotalTimeBetweenCoord(tour.getLastRoute().getLocation().getCoordinate(), customer.getCoordinate())
-                            + customer.getServiceTime() + getTimeReturn(customer.getCoordinate());
-                    
-                    if(tpsCustomer <= parameters.getOperatingTime()) {
-                        double qty1Total = tour.getFirstTrailerQuantity()+ customer.getOrderedQty();
-                        double tourTotal = tour.getTourQuantity()+ customer.getOrderedQty();
+                    //Vérifie si on a la place pour le client
+                    double qty1Total = tour.getFirstTrailerQuantity()+ customer.getOrderedQty();
+                    double tourTotal = tour.getTourQuantity()+ customer.getOrderedQty();
 
-                        //Si le camion a une remorque
-                        boolean attached = ((Route) tour.getListRoutes().get(tour.getListRoutes().size() - 1)).isTrailerAttached();
+                    //Si le camion a une remorque
+                    boolean attached = ((Route) tour.getListRoutes().get(tour.getListRoutes().size() - 1)).isTrailerAttached();
 
-                        if (qty1Total < parameters.getBodyCapacity() && !attached) {
+                    if (qty1Total < parameters.getBodyCapacity() && !attached) {
+                        //Vérifie si on a le tps avant d'aller au SwapLocation
+                        if(canAddCostumer(tour, customer)) {
                             //Ajoute la route      
-                            addCustumer(tour, customer, true);
+                            tour = addCustumer(tour, customer, true);
                             isServe = true;
-                            break;
-                        } else if(tourTotal < parameters.getBodyCapacity() * 2 && attached && customer.isAccessible()) {
-                            //Ajoute la route
-                            addCustumer(tour, customer, true);
-                            isServe = true;
-                            break;
-                        } else {
-                            //Si il n'y a plus de place dans la remorque 1 et que l'on a pas de 2éme remorque
-                            if(qty1Total > parameters.getBodyCapacity() && tour.getLastTrailerQuantity() == 0 && !attached){ 
-                                //Si le camion a le temps de faire toute les actions
-                                SwapLocation swapLocation = canGoToSwapLocation(tour, customer);
-                                
-                                if(swapLocation != null) {
-                                    addAttachedTrailerAndSwapLocation(tour, swapLocation, customer);
-                                    isServe = true;
-                                    break;
-                                }
-                            } else if(qty1Total > parameters.getBodyCapacity() && tour.getLastTrailerQuantity() == 0 && !attached) { //Si on a que le deuxième remorque
-                                //Récupérer le SwapLocation
-                                SwapLocation sp = tour.getSwapLocation();
-                                //Tps total : tourTps + go to client + go to SwapLocation + PickUp + go to Dépot
-                                double tpsTotal = tour.getTourTime()
-                                        + calc.getTotalTimeBetweenCoord(tour.getLastRoute().getLocation().getCoordinate(), customer.getCoordinate())
-                                        + customer.getServiceTime()
-                                        + calc.getTotalTimeBetweenCoord(sp.getCoordinate(), customer.getCoordinate())
-                                        + parameters.getPickupTime()
-                                        + getTimeReturn(customer.getCoordinate());
-                                            
-                                double qty2Total = tour.getLastTrailerQuantity() + customer.getOrderedQty();
-                                    
-                                //Vérifie s'il reste de la place et que l'on a le temps
-                                if(qty2Total <= parameters.getBodyCapacity() && tpsTotal <= parameters.getOperatingTime()) {
-                                    addCustumer(tour, customer, false);
-                                    isServe = true;
-                                    break;
-                                }                                
-                            }
+                            
+                            System.out.println("Add To Body1 : "+tour.getTourTime() + " = "+customer.getId());
+                            break;                            
                         }
-                    }/* else {
-                        //System.out.println("Le camion "+tour.getId()+" camion n'a plus le temps pour "+customer.getId());
-                        //Création d'un nouveau tour
-                        //iter.add(createNewTour(customer));
-                    }*/
+                    } else if(tourTotal < parameters.getBodyCapacity() * 2 && attached && customer.isAccessible()) {
+                        if(canAddCostumer(tour, customer)) {
+                            //Ajoute la route      
+                            tour = addCustumer(tour, customer, true);
+                            isServe = true;
+                            
+                            System.out.println("Add To Both : "+tour.getTourTime() + " = "+customer.getId());
+                            break;                            
+                        }
+                    } else {
+                        double qty2Total = tour.getLastTrailerQuantity() + customer.getOrderedQty();
+                        
+                        //Si il n'y a plus de place dans la remorque 1 et que l'on a pas de 2éme remorque
+                        if(qty1Total > parameters.getBodyCapacity() && qty2Total <= parameters.getBodyCapacity() && tour.getLastTrailerQuantity() == 0 && !attached){ 
+                            //Si le camion a le temps de faire toute les actions
+                            SwapLocation swapLocation = canGoToSwapLocation(tour, customer);
+                            
+                            if(swapLocation != null) {
+                                tour = addAttachedTrailerAndSwapLocation(tour, swapLocation, customer);
+                                
+                                System.out.println("Add New Body : "+tour.getTourTime() + " = "+customer.getId());
+                                isServe = true;
+                                break;
+                            }
+                        } else if(qty1Total > parameters.getBodyCapacity() && qty2Total <= parameters.getBodyCapacity() && tour.getLastTrailerQuantity() != 0 && !attached) { //Si on a que le deuxième remorque
+                            //Récupérer le SwapLocation
+                            SwapLocation sp = tour.getSwapLocation();
+                            
+                            //Tps total : tourTps + go to client + go to SwapLocation + PickUp + go to Dépot
+                            double tpsTotal = tour.getTourTime()
+                                        + calc.getTimeBetweenCoord(tour.getLastRoute().getLocation().getCoordinate(), customer.getCoordinate())
+                                        + customer.getServiceTime()
+                                        + calc.getTimeBetweenCoord(customer.getCoordinate(), sp.getCoordinate())
+                                        + parameters.getPickupTime()
+                                        + getTimeReturn(sp.getCoordinate());
+                                    
+                            //Vérifie s'il reste de la place et que l'on a le temps
+                            if(tpsTotal <= parameters.getOperatingTime()) {
+                                tour = addCustumer(tour, customer, false);
+                                isServe = true;                                
+                                
+                                System.out.println("Add To Body2 : "+tour.getTourTime() + "/ Calc: "+tpsTotal+"/ ="+customer.getId());
+                                break;
+                            }                                
+                        }
+                    }
                 }
                 
                 if(! isServe) {
-                    System.out.println("Aucune tournée trouvé pour "+customer.getId());
                     //Création d'un nouveau tour
                     iter.add(createNewTour(customer));
                 }
@@ -208,11 +210,14 @@ public class Version3 {
         Utils.log("Tournées créées");
     }
     
-    public Tour createNewTour(Customer customer) throws Exception {
-        //System.out.println("Création d'un nouveau tour");
-        
-        Depot depot = depotManager.find();        
-        RoutingParameters parameters = parametersManager.find();
+    /**
+     * La méthode crée une nouveau tour
+     * @param customer client à visiter
+     * @return tour créé
+     * @throws Exception 
+     */
+    public Tour createNewTour(Customer customer) throws Exception {        
+        Depot depot = depotManager.find();
         
         //Vérifie si on a besoin d'un train
         boolean attachTrailer = false;
@@ -258,7 +263,79 @@ public class Version3 {
         listRoutes.add(route);
         
         tour.setListRoutes(listRoutes);
+        
+        System.out.println("Add New All : "+tour.getTourTime()+" =>"+customer.getId());
         return tour;
+    }
+    
+    /**
+     * La méthode vérifie si le camion à le temps de passer chez le client
+     * @param tour la tournée
+     * @param c le client à ajouter dans le Body1
+     * @return 
+     * @throws Exception 
+     */
+    public boolean canAddCostumer(Tour tour, Customer c) throws Exception {        
+        CoordinatesCalc calc = new CoordinatesCalc();
+        
+        Route swapRoute = tour.getSwapLocationOfSwap();
+        double tpsTotal = 0.0;
+        
+        if(swapRoute != null) {
+            //Récupére le temps Avant le Swap   
+            tpsTotal += calculTime(tour.getListRoutes(), 1, swapRoute.getPosition() - 1);
+
+            //Ajoute le temps pour aller au client + Customer to Swap + Swap to nextCustomer
+            tpsTotal += calc.getTimeBetweenCoord(tour.getListRoutes().get(swapRoute.getPosition() - 2).getLocation().getCoordinate(), c.getCoordinate())
+                    + calc.getTimeBetweenCoord(c.getCoordinate(), swapRoute.getLocation().getCoordinate())
+                    + c.getServiceTime()
+                    + parameters.getSwapTime();
+
+            //Ajoute le temps pour le reste de la tournée            
+            tpsTotal += calculTime(tour.getListRoutes(), swapRoute.getPosition(), tour.getListRoutes().size());
+            
+            //Temps pour récupére remorque et aller au dépot
+            tpsTotal += calc.getTimeBetweenCoord(tour.getLastRoute().getLocation().getCoordinate(), swapRoute.getLocation().getCoordinate())
+                        + parameters.getPickupTime()
+                        + getTimeReturn(swapRoute.getLocation().getCoordinate());
+        } else {
+            tpsTotal = tour.getTourTime() 
+                + calc.getTimeBetweenCoord(tour.getLastRoute().getLocation().getCoordinate(), c.getCoordinate())
+                + c.getServiceTime() + getTimeReturn(c.getCoordinate());
+        }
+        
+        return tpsTotal <= parameters.getOperatingTime();
+    }
+    
+    /**
+     * Cette méthode permet de calculer le temps de service pour une liste de route
+     * @param list
+     * @param begin 
+     * @param end
+     * @return le temps
+     * @throws Exception 
+     */
+    public double calculTime(List<Route> list, int begin, int end) throws Exception {
+        CoordinatesCalc calc = new CoordinatesCalc();
+        double tpsTotal = 0.0;
+        
+        for(int i = begin; i < end; i++) {
+            if(list.get(i).getLocationType() == LocationType.SWAP_LOCATION) {
+                switch(list.get(i).getSwapAction()) {
+                    case PARK:
+                        tpsTotal += parameters.getParkTime();
+                        break;
+                    case PICKUP:
+                        tpsTotal += parameters.getPickupTime();
+                        break;
+                }
+            } else if(list.get(i).getLocationType() == LocationType.CUSTOMER) {
+                tpsTotal += ((Customer) list.get(i).getLocation()).getServiceTime();
+            }
+            tpsTotal += calc.getTimeBetweenCoord(list.get(i-1).getLocation().getCoordinate(), list.get(i).getLocation().getCoordinate());
+        }
+        
+        return tpsTotal;
     }
     
     /**
@@ -268,9 +345,10 @@ public class Version3 {
      * @return le SwapLocation par lequel on passe
      * @throws Exception 
      */
-    public SwapLocation canGoToSwapLocation(Tour tour, Customer c) throws Exception {        
+    public SwapLocation canGoToSwapLocation(Tour tour, Customer c) throws Exception {   
+        CoordinatesCalc calc = new CoordinatesCalc();
+        Depot depot = depotManager.find();     
         double tpsTotal = 0;
-        Depot depot = depotManager.find();
         
         //Récupérer le 1er client
         Customer c1 = (Customer) tour.getFirstCustomer().getLocation();
@@ -279,28 +357,25 @@ public class Version3 {
         SwapLocation swap = new SwapLocation();
         swap = swap.getNear(c1.getCoordinate());
         
-        CoordinatesCalc calc = new CoordinatesCalc();
         //Calcul du temps de trajet du Dépot au swap + time to park + aller au client
-        tpsTotal += calc.getTotalTimeBetweenCoord(depot.getCoordinate(), swap.getCoordinate())
+        tpsTotal += calc.getTimeBetweenCoord(depot.getCoordinate(), swap.getCoordinate())
                  + parameters.getParkTime()
-                 + calc.getTotalTimeBetweenCoord(swap.getCoordinate(), c1.getCoordinate());
+                 + calc.getTimeBetweenCoord(swap.getCoordinate(), c1.getCoordinate());
         
+        //Calcule le temps pour le reste de la tournée
         List<Route> list = tour.getListRoutes();
-        Collections.sort(list);
-        for(int i = 3; i < list.size(); i++) {
-            //Calcul temps du client i - 1 au client i 
-            tpsTotal += calc.getTotalTimeBetweenCoord(list.get(i-1).getLocation().getCoordinate(), list.get(i).getLocation().getCoordinate());
-        }
+        tpsTotal += calculTime(list, 2, list.size());
         
         //Calcul tps last client to Swap + tps to swap + tps Swap to client que l'on souhaite ajouter
-        tpsTotal += calc.getTotalTimeBetweenCoord(tour.getListRoutes().get(tour.getListRoutes().size() - 1).getLocation().getCoordinate(), swap.getCoordinate())
+        tpsTotal += calc.getTimeBetweenCoord(tour.getListRoutes().get(tour.getListRoutes().size() - 1).getLocation().getCoordinate(), swap.getCoordinate())
                         + parameters.getSwapTime()
-                        + calc.getTotalTimeBetweenCoord(swap.getCoordinate(), c.getCoordinate());
+                        + calc.getTimeBetweenCoord(swap.getCoordinate(), c.getCoordinate());
         
         //Calcul tps retour au SwapLocation + tps to PickUp + tps du retour dépot
-        tpsTotal += calc.getTotalTimeBetweenCoord(c.getCoordinate(), swap.getCoordinate()) 
+        tpsTotal += c.getServiceTime() 
+                    +calc.getTimeBetweenCoord(c.getCoordinate(), swap.getCoordinate()) 
                     + parameters.getPickupTime()
-                    + calc.getTotalTimeBetweenCoord(c.getCoordinate(), depot.getCoordinate());
+                    + getTimeReturn(swap.getCoordinate());
         
         if(tpsTotal <= parameters.getOperatingTime())
             return swap;
@@ -312,8 +387,9 @@ public class Version3 {
      * @param t
      * @param swapLocation
      * @param c 
+     * @return le tour modifier
      */
-    public void addAttachedTrailerAndSwapLocation(Tour t, SwapLocation swapLocation, Customer c) {
+    public Tour addAttachedTrailerAndSwapLocation(Tour t, SwapLocation swapLocation, Customer c) {
         //Parcours les Routes pour attacher la remorque et modifier les positions permettant l'ajout du SwapLocation
         List<Route> list = t.getListRoutes();
         ListIterator<Route> iter = list.listIterator();
@@ -373,17 +449,18 @@ public class Version3 {
         list.add(route);
         
         t.setListRoutes(list);
+        return t;
     }
     
     /**
      * Méthode permet d'ajouter un client à une tournée déjà créé
      * @param t la tournée
      * @param c le client
-     * @param attachTrailer
      * @param inFirstTrailer si vaut true, la commande doit être ajouter dans la 1ére remorque
+     * @return le tour modifier
      * @throws Exception 
      */
-    public void addCustumer(Tour t, Customer c, boolean inFirstTrailer) throws Exception {
+    public Tour addCustumer(Tour t, Customer c, boolean inFirstTrailer) throws Exception {
         RoutingParameters parameters = parametersManager.find();
         List<Route> listRoutes = t.getListRoutes();
         
@@ -414,7 +491,14 @@ public class Version3 {
 
                 t.setListRoutes(listRoutes);
             } else {
-                 //Ajoute une route à cette position
+                //Incrémente les positions des routes allant du SwapLocation jusqu'à la fin
+                for(int i = position - 1; i < listRoutes.size(); i++) {
+                    Route r = listRoutes.get(i);
+                    r.setPosition(r.getPosition() + 1);
+                    listRoutes.set(i, r);
+                }
+                
+                //Ajoute une route à cette position
                 Route route = new Route();
                 route.setTour(t);
                 route.setPosition(position);
@@ -424,18 +508,11 @@ public class Version3 {
                 route.setFirstTrailer(1);
                 route.setLastTrailer(2);
                 route.setSwapAction(SwapAction.NONE);
-                route.setQty1(c.getOrderedQty() > parameters.getBodyCapacity() ? parameters.getBodyCapacity() : c.getOrderedQty());
-                route.setQty2(c.getOrderedQty() > parameters.getBodyCapacity() ? c.getOrderedQty() - parameters.getBodyCapacity() : 0);
+                route.setQty1(c.getOrderedQty());
+                route.setQty2(0);
                 listRoutes.add(route);
 
                 t.setListRoutes(listRoutes);
-
-                //Incrémente les positions des routes suivantes
-                for(int i = position; i < t.getListRoutes().size(); i++) {
-                    Route r = t.getListRoutes().get(i);
-                    System.out.println("Edit :"+ r.getLocationType() + " : "+r.getPosition());
-                    r.setPosition(r.getPosition() + 1);
-                }
             }
         } else {
             //Récupére la dernière route pour avoir l'état du camion
@@ -450,18 +527,18 @@ public class Version3 {
             route.setFirstTrailer(last.getFirstTrailer());
             route.setLastTrailer(last.getLastTrailer());
             route.setSwapAction(SwapAction.NONE);
-            route.setQty1(c.getOrderedQty() > parameters.getBodyCapacity() ? parameters.getBodyCapacity() : c.getOrderedQty());
-            route.setQty2(c.getOrderedQty() > parameters.getBodyCapacity() ? c.getOrderedQty() - parameters.getBodyCapacity() : 0);
+            route.setQty1(0);
+            route.setQty2(c.getOrderedQty());
             listRoutes.add(route);
             
             t.setListRoutes(listRoutes);
-        }       
+        }     
         
+        return t;
     }
     
-    public Tour endedTour(Tour t) throws Exception {        
-        Depot depot = depotManager.find();        
-        RoutingParameters parameters = parametersManager.find();
+    public void endedTour(Tour t) throws Exception {        
+        Depot depot = depotManager.find();
         
         List<Route> listRoutes = t.getListRoutes();
         boolean attachTrailer = false;
@@ -513,7 +590,6 @@ public class Version3 {
         
         t.setListRoutes(listRoutes); 
         tourManager.create(t);
-        return t;
     }
     
     public double getTimeReturn(Coordinate coordinate) throws Exception {
@@ -521,8 +597,8 @@ public class Version3 {
         Coordinate coordDepot = depot.getCoordinate();
         
         CoordinatesCalc calc = new CoordinatesCalc();
-        
-        return calc.getTotalTimeBetweenCoord(coordinate, coordDepot);
+                
+        return calc.getTimeBetweenCoord(coordinate, coordDepot);
     }
     
     public void createSolution() throws Exception {

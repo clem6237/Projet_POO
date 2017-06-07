@@ -99,7 +99,7 @@ public class Tour implements Serializable {
     public int getPositionOfSwap() {
         Collections.sort(this.listRoutes);
         for(Route r : this.getListRoutes()) {
-            if(r.getLocationType() == LocationType.SWAP_LOCATION)
+            if(r.getLocationType() == LocationType.SWAP_LOCATION && r.getSwapAction() == SwapAction.SWAP)
                 return r.getPosition();
         }
         return 0;
