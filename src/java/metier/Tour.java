@@ -168,7 +168,7 @@ public class Tour implements Serializable {
         double timeTotal = 0;
         
         double serv = 0.0, swap = 0.0;
-        for(Route r : this.listRoutesOrdered()) {
+        for(Route r : this.getListRoutes()) {
             Location l = r.getLocation();
             //Si c'est un client, on ajoute le temps de service
             if(r.getLocationType() == LocationType.CUSTOMER) {
@@ -205,8 +205,6 @@ public class Tour implements Serializable {
             }
         }
         
-        System.out.println("Service : "+serv);
-        System.out.println("SwapAction : "+swap);
         return timeTotal;
     }
     

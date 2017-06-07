@@ -151,7 +151,6 @@ public class SolutionCalc {
                 }
                 
                 if(! isServe) {
-                    System.out.println("Aucune tournée trouvé pour "+customer.getId());
                     //Création d'un nouveau tour
                     iter.add(createNewTour(customer));
                 }
@@ -223,6 +222,8 @@ public class SolutionCalc {
         listRoutes.add(route);
         
         tour.setListRoutes(listRoutes);
+        
+        System.out.println("Add New All : "+tour.getTourTime());
         return tour;
     }
     

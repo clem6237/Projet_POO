@@ -4748,7 +4748,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
   padding-right: 35px;
 }
 /** Design du bouton de lancement **/
-.pager .next.end > a, .pager .next.end > span 
+.pager .next.end > a, .pager .next.end > span { 
     background-color: #085394;
     cursor: pointer;
     color: white;
