@@ -33,6 +33,7 @@
         {
             //$('#send').submit();  
             $("#loading").css("display", "block");
+            $("body").css("overflow-y", "hidden");
             event.preventDefault();
             var form = $('#send')[0];
             var data = new FormData(form);
@@ -62,6 +63,12 @@
         }
     });
 </script>
+
+<div id="loading" style="display: none; text-align: center;">
+    <img id="loading-img" src="./IMG/loading.gif" />
+    <h2>Chargement en cours <img height="40px" src="./IMG/dots-loader.gif"/></h2>
+</div>
+
 <div class="container">
     <div class="row">
         <div class="col-md-12">
@@ -78,7 +85,7 @@
                     <input type="file" name="locations" pattern="*.csv" accept=".csv"/><br/>
                 </div>
                 <ul class="pager">
-                  <li id="BtnNext" class="next end">
+                  <li id="BtnNext" class="disabled next end">
                     <a>Lancer le calcul</a>
                   </li>
                   <li class="next">
@@ -88,10 +95,6 @@
                     <a href="index.jsp">Annuler</a>
                   </li>
                 </ul>
-                <div id="loading" style="display: none; text-align: center;">
-                    <img id="loading-img" src="./IMG/loading.gif" />
-                    <h2>Chargement en cours <img src="./IMG/dots-loader.gif"/></h2>
-                </div>
            </form>
         </div>
     </div>

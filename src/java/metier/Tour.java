@@ -3,11 +3,13 @@ package metier;
 import dao.DaoFactory;
 import dao.PersistenceType;
 import dao.RouteDao;
+import dao.RoutingParametersDao;
 import dao.TourDao;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,6 +26,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 import utils.CoordinatesCalc;
+import utils.CostCalc;
 
 /**
  *
@@ -101,6 +104,15 @@ public class Tour implements Serializable {
         }
         return 0;
     }
+    
+    public Route getSwapLocationOfSwap() {
+        Collections.sort(this.listRoutes);
+        for(Route r : this.getListRoutes()) {
+            if(r.getLocationType() == LocationType.SWAP_LOCATION && r.getSwapAction() == SwapAction.SWAP)
+                return r;
+        }
+        return null;
+    }
 
     public void setListRoutes(List<Route> listRoutes) {
         this.listRoutes = listRoutes;
@@ -146,26 +158,47 @@ public class Tour implements Serializable {
         return routeManager.findByTour(this);
     }
     
-    public double getTourTime() {
+    public double getTourTime() throws Exception {
         CoordinatesCalc calc = new CoordinatesCalc();
+        
+        RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
+        RoutingParameters parameters = parametersManager.find();
         
         Coordinate lastCoordinate = null;
         double timeTotal = 0;
         
+        double serv = 0.0, swap = 0.0;
         for(Route r : this.listRoutes) {
             Location l = r.getLocation();
             //Si c'est un client, on ajoute le temps de service
             if(r.getLocationType() == LocationType.CUSTOMER) {
                 Customer c = (Customer) r.getLocation();
                 timeTotal += c.getServiceTime();
+                serv += c.getServiceTime();
+            } else if(r.getLocationType() == LocationType.SWAP_LOCATION) {
+                switch(r.getSwapAction()) {
+                    case PARK:
+                        timeTotal += parameters.getParkTime();
+                        swap += parameters.getParkTime();
+                        break;
+                    case PICKUP:
+                        timeTotal += parameters.getPickupTime();
+                        swap += parameters.getPickupTime();
+                        break;
+                    case SWAP:
+                        timeTotal += parameters.getSwapTime();
+                        swap += parameters.getSwapTime();
+                        break;
+                    case EXCHANGE:
+                        timeTotal += parameters.getExchangeTime();
+                        swap += parameters.getExchangeTime();
+                        break;
+                        
+                }
             }
             
             if(lastCoordinate != null) {
-                try {
-                    timeTotal += calc.getTotalTimeBetweenCoord(lastCoordinate, l.getCoordinate());
-                } catch (Exception ex) {
-                    Logger.getLogger(Tour.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                timeTotal += calc.getTimeBetweenCoord(lastCoordinate, l.getCoordinate());
                 lastCoordinate =  l.getCoordinate();
             } else {
                 lastCoordinate =  l.getCoordinate();
@@ -173,6 +206,70 @@ public class Tour implements Serializable {
         }
         
         return timeTotal;
+    }
+    
+    public double getTourDistance() throws Exception {
+        CoordinatesCalc calc = new CoordinatesCalc();
+        
+        Coordinate lastCoordinate = null;
+        double distanceTotal = 0;
+        
+        for(Route r : this.listRoutes) {
+            Location l = r.getLocation();
+            
+            if (lastCoordinate != null) {
+                distanceTotal += calc.getDistanceBetweenCoord(lastCoordinate, l.getCoordinate());
+                lastCoordinate =  l.getCoordinate();
+            } else {
+                lastCoordinate =  l.getCoordinate();
+            }
+        }
+        
+        return distanceTotal;
+    }
+    
+    public double getFirstTrailerDistance() throws Exception {
+        CoordinatesCalc calc = new CoordinatesCalc();
+        
+        Coordinate lastCoordinate = null;
+        double distanceTotal = 0;
+        
+        for(Route r : this.listRoutes) {
+            Location l = r.getLocation();
+            
+            if (lastCoordinate != null) {
+                if (r.isTrailerAttached() || r.getFirstTrailer() == 1) {
+                    distanceTotal += calc.getDistanceBetweenCoord(lastCoordinate, l.getCoordinate());
+                    lastCoordinate =  l.getCoordinate();
+                }
+            } else {
+                lastCoordinate =  l.getCoordinate();
+            }
+        }
+        
+        return distanceTotal;
+    }
+    
+    public double getLastTrailerDistance() throws Exception {
+        CoordinatesCalc calc = new CoordinatesCalc();
+        
+        Coordinate lastCoordinate = null;
+        double distanceTotal = 0;
+        
+        for(Route r : this.listRoutes) {
+            Location l = r.getLocation();
+            
+            if (lastCoordinate != null) {
+                if (r.isTrailerAttached() || r.getFirstTrailer() == 2) {
+                    distanceTotal += calc.getDistanceBetweenCoord(lastCoordinate, l.getCoordinate());
+                    lastCoordinate =  l.getCoordinate();
+                }
+            } else {
+                lastCoordinate =  l.getCoordinate();
+            }
+        }
+        
+        return distanceTotal;
     }
     
     public double getTourQuantity() throws Exception {
@@ -212,5 +309,51 @@ public class Tour implements Serializable {
         }
         
         return quantity;
+    }
+    
+    public double getTotalCost() throws Exception {
+        double total = 0;
+        
+        total += this.getTotalTruckCost(this.getTourDistance(), this.getTourTime());
+        total += this.getTotalTrailerCost(this.getFirstTrailerDistance(), 0);
+        total += this.getTotalTrailerCost(this.getLastTrailerDistance(), 0);
+        
+        return total;
+    }
+    
+    public double getTotalTruckCost(double distance, double time) {
+        return getTruckUsageCost()
+                + getTruckDistanceCost(distance) 
+                + getTruckTimeCost(time);
+    }
+    
+    public double getTruckUsageCost() {
+        return new CostCalc().getTruckUsageCost();
+    }
+    
+    public double getTruckDistanceCost(double distance) {
+        return new CostCalc().getTruckDistanceCost(distance);
+    }
+    
+    public double getTruckTimeCost(double time) {
+        return new CostCalc().getTruckTimeCost(time);
+    }
+    
+    public double getTotalTrailerCost(double distance, double time) {
+        return getTrailerUsageCost()
+                + getTrailerDistanceCost(distance) 
+                + getTrailerTimeCost(time);
+    }
+    
+    public double getTrailerUsageCost() {
+        return new CostCalc().getTrailerUsageCost();
+    }
+    
+    public double getTrailerDistanceCost(double distance) {
+        return new CostCalc().getTrailerDistanceCost(distance);
+    }
+    
+    public double getTrailerTimeCost(double time) {
+        return new CostCalc().getTrailerTimeCost(time);
     }
 }
