@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Lato|Lato');
+﻿@import url('https://fonts.googleapis.com/css?family=Lato|Lato');
 
 html {
   font-family: sans-serif;
@@ -4731,6 +4731,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
   border: 1px solid #dddddd;
   border-radius: 15px;
 }
+
 .pager > li > a:hover,
 .pager > li > a:focus,
 .pager > .next > a:hover,
@@ -4747,8 +4748,14 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
   padding-right: 35px;
 }
 /** Design du bouton de lancement **/
-.pager .next.end > a, .pager .next.end > span {
-    background-color: #085394; 
+.pager .next.end > a, .pager .next.end > span 
+    background-color: #085394;
+    cursor: pointer;
+    color: white;
+}
+.pager .next.end > a:hover, .pager .next.end > span:hover {
+    background-color: #043b6b;
+    cursor: pointer;
     color: white;
 }
 

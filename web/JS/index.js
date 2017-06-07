@@ -17,8 +17,6 @@ var tourOperatingTime;
 $(document).on("click", ".list-group-item", function onClickList() {
     var type = $(this).parent().attr('id');
     
-    console.log("onClick list "+type);
-    
     switch(type) {
         case 'camions':
             var idTour = $(this).attr("id");
@@ -108,7 +106,7 @@ function initialize() {
 }
 
 function calcItineraire(id) {
-   
+   console.log("calcItineraire");
     map = new google.maps.Map(document.getElementById("maps"), {});
     map.setZoom(4);
     
@@ -175,7 +173,6 @@ function calcItineraire(id) {
     }
 
     var tour = tours.get(parseInt(id));
-    
     var tourQuantity = tour[0].quantity;
     var tourTime = tour[0].time / 60;
     var tourTotalCost = tour[0].totalCost;

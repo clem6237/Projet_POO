@@ -168,7 +168,7 @@ public class Tour implements Serializable {
         double timeTotal = 0;
         
         double serv = 0.0, swap = 0.0;
-        for(Route r : this.listRoutes) {
+        for(Route r : this.listRoutesOrdered()) {
             Location l = r.getLocation();
             //Si c'est un client, on ajoute le temps de service
             if(r.getLocationType() == LocationType.CUSTOMER) {
@@ -205,6 +205,8 @@ public class Tour implements Serializable {
             }
         }
         
+        System.out.println("Service : "+serv);
+        System.out.println("SwapAction : "+swap);
         return timeTotal;
     }
     
@@ -214,7 +216,7 @@ public class Tour implements Serializable {
         Coordinate lastCoordinate = null;
         double distanceTotal = 0;
         
-        for(Route r : this.listRoutes) {
+        for(Route r : this.listRoutesOrdered()) {
             Location l = r.getLocation();
             
             if (lastCoordinate != null) {
@@ -234,7 +236,7 @@ public class Tour implements Serializable {
         Coordinate lastCoordinate = null;
         double distanceTotal = 0;
         
-        for(Route r : this.listRoutes) {
+        for(Route r : this.listRoutesOrdered()) {
             Location l = r.getLocation();
             
             if (lastCoordinate != null) {
@@ -256,7 +258,7 @@ public class Tour implements Serializable {
         Coordinate lastCoordinate = null;
         double distanceTotal = 0;
         
-        for(Route r : this.listRoutes) {
+        for(Route r : this.listRoutesOrdered()) {
             Location l = r.getLocation();
             
             if (lastCoordinate != null) {
@@ -314,46 +316,53 @@ public class Tour implements Serializable {
     public double getTotalCost() throws Exception {
         double total = 0;
         
-        total += this.getTotalTruckCost(this.getTourDistance(), this.getTourTime());
-        total += this.getTotalTrailerCost(this.getFirstTrailerDistance(), 0);
-        total += this.getTotalTrailerCost(this.getLastTrailerDistance(), 0);
+        total += this.getTotalTruckCost();
+        total += this.getTotalTrailerCost();
         
         return total;
     }
     
-    public double getTotalTruckCost(double distance, double time) {
+    public double getTotalTruckCost() throws Exception {
         return getTruckUsageCost()
-                + getTruckDistanceCost(distance) 
-                + getTruckTimeCost(time);
+                + getTruckDistanceCost() 
+                + getTruckTimeCost();
     }
     
     public double getTruckUsageCost() {
         return new CostCalc().getTruckUsageCost();
     }
     
-    public double getTruckDistanceCost(double distance) {
-        return new CostCalc().getTruckDistanceCost(distance);
+    public double getTruckDistanceCost() throws Exception {
+        return new CostCalc().getTruckDistanceCost(this.getTourDistance());
     }
     
-    public double getTruckTimeCost(double time) {
-        return new CostCalc().getTruckTimeCost(time);
+    public double getTruckTimeCost() throws Exception {
+        return new CostCalc().getTruckTimeCost(this.getTourTime());
     }
     
-    public double getTotalTrailerCost(double distance, double time) {
-        return getTrailerUsageCost()
-                + getTrailerDistanceCost(distance) 
-                + getTrailerTimeCost(time);
+    public double getTotalTrailerCost() throws Exception {
+        double total = 0;
+        
+        total += getLastTrailerDistanceCost();
+        
+        if (total > 0)
+            total += getTrailerUsageCost();
+        
+        total += getFirstTrailerDistanceCost();
+        total += getTrailerUsageCost();
+        
+        return total;
     }
     
     public double getTrailerUsageCost() {
         return new CostCalc().getTrailerUsageCost();
     }
     
-    public double getTrailerDistanceCost(double distance) {
-        return new CostCalc().getTrailerDistanceCost(distance);
+    public double getFirstTrailerDistanceCost() throws Exception {
+        return new CostCalc().getTrailerDistanceCost(this.getFirstTrailerDistance());
     }
     
-    public double getTrailerTimeCost(double time) {
-        return new CostCalc().getTrailerTimeCost(time);
+    public double getLastTrailerDistanceCost() throws Exception {
+        return new CostCalc().getTrailerDistanceCost(this.getLastTrailerDistance());
     }
 }

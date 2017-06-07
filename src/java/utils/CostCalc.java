@@ -28,7 +28,7 @@ public class CostCalc {
     }
     
     public double getTruckDistanceCost(double distance) {
-        return parameters.getTruckDistanceCost() * (distance / 100);
+        return parameters.getTruckDistanceCost() * (distance / 1000);
     }
     
     public double getTruckTimeCost(double time) {
@@ -40,7 +40,7 @@ public class CostCalc {
     }
     
     public double getTrailerDistanceCost(double distance) {
-        return parameters.getTrailerDistanceCost() * (distance / 100);
+        return parameters.getTrailerDistanceCost() * (distance / 1000);
     }
     
     public double getTrailerTimeCost(double time) {

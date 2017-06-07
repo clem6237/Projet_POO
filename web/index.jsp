@@ -87,6 +87,18 @@
                             tourDetail.quantity = ${tour.getTourQuantity()};
                             tourDetail.time = ${tour.getTourTime()};
                             tourDetail.totalCost = ${tour.getTotalCost()};
+                            tourDetail.truckDistance = ${tour.getTourDistance()};
+                            tourDetail.firtstTrailerDistance = ${tour.getFirstTrailerDistance()};
+                            tourDetail.lastTrailerDistance = ${tour.getLastTrailerDistance()};
+                            tourDetail.truckUsageCost = ${tour.getTruckUsageCost()};
+                            tourDetail.truckDistanceCost = ${tour.getTruckDistanceCost()};
+                            tourDetail.truckTimeCost = ${tour.getTruckTimeCost()};
+                            tourDetail.truckTotalCost = ${tour.getTotalTruckCost()};
+                            tourDetail.firstTrailerUsageCost = ${tour.getTrailerUsageCost()};
+                            tourDetail.firstTrailerDistanceCost = ${tour.getFirstTrailerDistanceCost()};
+                            tourDetail.lastTrailerUsage = ${tour.getTrailerUsageCost()};
+                            tourDetail.lastTrailerDistanceCost = ${tour.getLastTrailerDistanceCost()};
+                            tourDetail.trailerTotalCost = ${tour.getTotalTrailerCost()};
                             
                             var tourMap = tours.get(tourDetail.id);
                             if (!tourMap) tourMap = new Array();
