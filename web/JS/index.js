@@ -30,12 +30,12 @@ $(document).on("click", ".list-group-item", function onClickList() {
             break;
             
         case 'clients':
-            initialize();
-            
             var idCustomer = $(this).attr("id");
             document.getElementById("selection").innerHTML = "Client " + idCustomer;
             document.getElementById("maps").className = "mapLarge";
             document.getElementById("tourInfos").className = "tourInfosHide";
+            
+            initialize();
             
             var coordX = $(this).attr("coordX");
             var coordY = $(this).attr("coordY");
@@ -53,8 +53,12 @@ $(document).on("click", ".list-group-item", function onClickList() {
 });
 
 $(document).on("click", "#refreshMap", function onClickList() {
-    initialize();
     document.getElementById("selection").innerHTML = "";
+    
+    document.getElementById("maps").className = "mapLarge";
+    document.getElementById("tourInfos").className = "tourInfosHide";
+    
+    initialize();
 });
 
 function initialize() {
