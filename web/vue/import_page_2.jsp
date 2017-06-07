@@ -45,6 +45,8 @@
           $('#send').submit();  
     });
 </script>
+<div id="helpBox" class="helpBoxHide"></div>
+
 <div class="container">
     <div class="row">
         <div class="col-md-12">
@@ -57,11 +59,13 @@
                 <div class="container">
                     <h1 class="text-primary">Import du fichier de flotte et des actions</h1>
                     <br/>
-                    <label>Fichier de la flotte <span class="obligatory">*</span></label><br/>
+                    <label>Fichier de la flotte <span class="obligatory">*</span></label>
+                    <img class="helpFile" src="./IMG/help.png" onmouseover="showHelp('fleet')" onmouseout="hideHelp()"/><br/>
                     <input type="file" name="fleet" pattern="*.csv" accept=".csv"/><br/>
                     
                     <br/>
-                    <label>Caractéristiques des actions<span class="obligatory">*</span></label><br/>
+                    <label>Caractéristiques des actions<span class="obligatory">*</span></label>
+                    <img class="helpFile" src="./IMG/help.png" onmouseover="showHelp('swapActions')" onmouseout="hideHelp()"/><br/>
                     <input type="file" name="swapActions" pattern="*.csv" accept=".csv" /><br/>
                 </div>
                 <ul class="pager">

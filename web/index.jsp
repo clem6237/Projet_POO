@@ -139,7 +139,7 @@
                             
                     </script>
 
-                    <input type="button" id="refreshMap" value="Rafraîchir la carte" />
+                    <input type="button" id="refreshMap" value="Rafraîchir la carte" style="margin-left: 20px;"/>
                     <h2 id="selection" style="text-align: center;"></h2>
                     <div id="maps" class="mapLarge"></div>
                     <div id="tourInfos" class="tourInfosHide">

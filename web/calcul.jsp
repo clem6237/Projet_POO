@@ -16,6 +16,7 @@
     <link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css"
     rel="stylesheet" type="text/css">
     <link href="CSS/style.css" rel="stylesheet" type="text/css">
+    <script src="JS/import.js"></script>
     <title>SB-VRP</title>
   </head>
   <body>
