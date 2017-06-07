@@ -108,7 +108,6 @@ function initialize() {
 }
 
 function calcItineraire(id) {
-   console.log("calcItineraire");
     map = new google.maps.Map(document.getElementById("maps"), {});
     map.setZoom(4);
     
@@ -183,8 +182,6 @@ function calcItineraire(id) {
     var tourTime = tour[0].time / 60;
     var tourTotalCost = tour[0].totalCost;
     
-    console.log(tour);
-    
     document.getElementById("tourFilling").innerHTML = tourQuantity + " / " + (routeInfos[0].trailer ? (2 * tourCapacity + " unités (mode train)") : (tourCapacity + " unités (mode camion)"));
     document.getElementById("tourTransitTime").innerHTML = tourTime.toFixed(2) + " / " + tourOperatingTime.toFixed(2) + " minutes";
     document.getElementById("tourTotalCost").innerHTML = tourTotalCost.toFixed(2) + " €";
@@ -214,7 +211,6 @@ function createMarker(map, latlng, label, icon) {
 }
 
 function moveProgressBar(barName, value) {
-
     var elem = document.getElementById(barName); 
     var width = value > 100 ? 100 : value;
     
@@ -235,11 +231,11 @@ function drawChart(id) {
     
     var data = google.visualization.arrayToDataTable([
         ['Coût', 'Euros'],
-        ['Camion - Utilisation', tour[0].truck.usageCost],
-        ['Camion - Coût horaire', tour[0].truck.timeCost],
-        ['Camion - Coût kilométrique', tour[0].truck.distanceCost],
-        ['Remorques - Utilisation', tour[0].trailers.usageCost],
-        ['Remorques - Coût kilométrique', tour[0].trailers.firstTrailerCost + tour[0].trailers.lastTrailerCost]
+        ['Camion - Utilisation', tour[0].truckUsageCost],
+        ['Camion - Coût horaire', tour[0].truckTimeCost],
+        ['Camion - Coût kilométrique', tour[0].truckDistanceCost],
+        ['Remorques - Utilisation', tour[0].trailersUsageCost],
+        ['Remorques - Coût kilométrique', tour[0].firstTrailerCost + tour[0].lastTrailerCost]
     ]);
     
     var options = {

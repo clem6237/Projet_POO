@@ -22,7 +22,7 @@
         <script src="JS/index.js"></script>
         <script type="text/javascript">
             google.charts.load('current', {'packages':['corechart']});
-            google.charts.setOnLoadCallback(drawChart);
+            //google.charts.setOnLoadCallback(drawChart);
         </script>
         <title>SB-VRP</title>
     </head>
@@ -92,26 +92,16 @@
                             tourDetail.id = ${tour.id};
                             tourDetail.quantity = ${tour.getTourQuantity()};
                             tourDetail.time = ${tour.getTourTimeFromBase()};
-                            tourDetail.distance = ${tour.getTourDistance()};
                             tourDetail.totalCost = ${tour.getTotalCost()};
                             
-                            var truck = new Object();
-                            truck.totalCost = ${tour.getTotalTruckCost()};
-                            truck.usageCost = ${tour.getTruckUsageCost()};
-                            truck.distanceCost = ${tour.getTruckDistanceCost()};
-                            truck.timeCost = ${tour.getTruckTimeCost()};
-                                    
-                            var trailers = new Object();
-                            trailers.firstTrailerDistance = ${tour.getFirstTrailerDistance()};
-                            trailers.lastTrailerDistance = ${tour.getLastTrailerDistance()};
-                            trailers.totalCost = ${tour.getTotalTrailerCost()};
-                            trailers.usageCost = ${tour.getTrailerUsageCost()};
-                            trailers.firstTrailerCost = ${tour.getFirstTrailerDistanceCost()};
-                            trailers.lastTrailerCost = ${tour.getLastTrailerDistanceCost()};
-                                
-                            tourDetail.truck = truck;
-                            tourDetail.trailers = trailers;
-                                    
+                            tourDetail.truckUsageCost = ${tour.getTruckUsageCost()};
+                            tourDetail.truckDistanceCost = ${tour.getTruckDistanceCost()};
+                            tourDetail.truckTimeCost = ${tour.getTruckTimeCost()};
+                            
+                            tourDetail.trailersUsageCost = ${tour.getTrailerUsageCost()};
+                            tourDetail.firstTrailerCost = ${tour.getFirstTrailerDistanceCost()};
+                            tourDetail.lastTrailerCost = ${tour.getLastTrailerDistanceCost()};
+                                 
                             var tourMap = tours.get(tourDetail.id);
                             if (!tourMap) tourMap = new Array();
                             tourMap.push(tourDetail);
