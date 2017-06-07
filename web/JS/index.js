@@ -25,9 +25,7 @@ $(document).on("click", ".list-group-item", function onClickList() {
             document.getElementById("tourInfos").className = "tourInfosShow";
             
             calcItineraire(idTour);
-            
-            // Scroll en haut pour visualiser la map
-            //window.scrollTo(0,0);
+            drawChart(idTour);
             
             break;
             
@@ -143,6 +141,7 @@ function calcItineraire(id) {
     });
     
     var title;
+    var icon;
     var location;
     
     /* POINT DE DÉPART */
@@ -162,13 +161,16 @@ function calcItineraire(id) {
         
         if (location.locationType === "DEPOT") {
             title = "D&eacute;p&ocirc;t " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
-        } else if (location.locationType === "SWAP LOCATION") {
+            icon = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
+        } else if (location.locationType === "SWAP_LOCATION") {
             title = "Swap Location " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
+            icon = 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png';
         } else if (location.locationType === "CUSTOMER") {
             title = "Client " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
+            icon = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
         }
         
-        createMarker(map, waypts[i].location, title, 'http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+        createMarker(map, waypts[i].location, title, icon);
         
     }
 
@@ -176,6 +178,8 @@ function calcItineraire(id) {
     var tourQuantity = tour[0].quantity;
     var tourTime = tour[0].time / 60;
     var tourTotalCost = tour[0].totalCost;
+    
+    console.log(tour);
     
     document.getElementById("tourFilling").innerHTML = tourQuantity + " / " + (routeInfos[0].trailer ? (2 * tourCapacity + " unités (mode train)") : (tourCapacity + " unités (mode camion)"));
     document.getElementById("tourTransitTime").innerHTML = tourTime.toFixed(2) + " / " + tourOperatingTime.toFixed(2) + " minutes";
@@ -220,4 +224,29 @@ function moveProgressBar(barName, value) {
     } else {
         elem.style.backgroundColor = "green";
     }
+}
+
+function drawChart(id) {
+    var tour = tours.get(parseInt(id));
+    
+    var data = google.visualization.arrayToDataTable([
+        ['Coût', 'Euros'],
+        ['Camion - Utilisation', tour[0].truck.usageCost],
+        ['Camion - Coût horaire', tour[0].truck.timeCost],
+        ['Camion - Coût kilométrique', tour[0].truck.distanceCost],
+        ['Remorques - Utilisation', tour[0].trailers.usageCost],
+        ['Remorques - Coût kilométrique', tour[0].trailers.firstTrailerCost + tour[0].trailers.lastTrailerCost]
+    ]);
+    
+    var options = {
+        chartArea: {
+            width: '100%', 
+            height: '60%',
+            top: 0
+        },
+        legend: 'none'
+    };
+    
+    var chart = new google.visualization.PieChart(document.getElementById("pieChart"));
+    chart.draw(data, options);
 }

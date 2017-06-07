@@ -16,8 +16,14 @@
         <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyBBBWw6VTe0VjBqdS8DssFqVUdg2O9wORI&language=fr&sensor=false"></script>
         <link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css"
         rel="stylesheet" type="text/css">
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        
         <link href="CSS/style.css" rel="stylesheet" type="text/css">
         <script src="JS/index.js"></script>
+        <script type="text/javascript">
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(drawChart);
+        </script>
         <title>SB-VRP</title>
     </head>
   
@@ -85,21 +91,27 @@
                             var tourDetail = new Object();
                             tourDetail.id = ${tour.id};
                             tourDetail.quantity = ${tour.getTourQuantity()};
-                            tourDetail.time = ${tour.getTourTime()};
+                            tourDetail.time = ${tour.getTourTimeFromBase()};
+                            tourDetail.distance = ${tour.getTourDistance()};
                             tourDetail.totalCost = ${tour.getTotalCost()};
-                            tourDetail.truckDistance = ${tour.getTourDistance()};
-                            tourDetail.firtstTrailerDistance = ${tour.getFirstTrailerDistance()};
-                            tourDetail.lastTrailerDistance = ${tour.getLastTrailerDistance()};
-                            tourDetail.truckUsageCost = ${tour.getTruckUsageCost()};
-                            tourDetail.truckDistanceCost = ${tour.getTruckDistanceCost()};
-                            tourDetail.truckTimeCost = ${tour.getTruckTimeCost()};
-                            tourDetail.truckTotalCost = ${tour.getTotalTruckCost()};
-                            tourDetail.firstTrailerUsageCost = ${tour.getTrailerUsageCost()};
-                            tourDetail.firstTrailerDistanceCost = ${tour.getFirstTrailerDistanceCost()};
-                            tourDetail.lastTrailerUsage = ${tour.getTrailerUsageCost()};
-                            tourDetail.lastTrailerDistanceCost = ${tour.getLastTrailerDistanceCost()};
-                            tourDetail.trailerTotalCost = ${tour.getTotalTrailerCost()};
                             
+                            var truck = new Object();
+                            truck.totalCost = ${tour.getTotalTruckCost()};
+                            truck.usageCost = ${tour.getTruckUsageCost()};
+                            truck.distanceCost = ${tour.getTruckDistanceCost()};
+                            truck.timeCost = ${tour.getTruckTimeCost()};
+                                    
+                            var trailers = new Object();
+                            trailers.firstTrailerDistance = ${tour.getFirstTrailerDistance()};
+                            trailers.lastTrailerDistance = ${tour.getLastTrailerDistance()};
+                            trailers.totalCost = ${tour.getTotalTrailerCost()};
+                            trailers.usageCost = ${tour.getTrailerUsageCost()};
+                            trailers.firstTrailerCost = ${tour.getFirstTrailerDistanceCost()};
+                            trailers.lastTrailerCost = ${tour.getLastTrailerDistanceCost()};
+                                
+                            tourDetail.truck = truck;
+                            tourDetail.trailers = trailers;
+                                    
                             var tourMap = tours.get(tourDetail.id);
                             if (!tourMap) tourMap = new Array();
                             tourMap.push(tourDetail);
@@ -149,6 +161,7 @@
                         <hr/>
                         <h3>Coût total</h3>
                         <p id="tourTotalCost"></p>
+                        <div id="pieChart" style="width: 100%; height: 300px;"></div>
                     </div>
                 </div>
             </div>
