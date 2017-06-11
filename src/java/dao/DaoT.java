@@ -8,7 +8,6 @@ import java.util.Collection;
  * @param <T>
  */
 public interface DaoT<T> {
-    
     public boolean create(T obj) throws DaoException;
     public DaoT find (int id);
     public Collection<T> findAll() ;

@@ -39,32 +39,6 @@ public class SwapLocation extends Location implements Serializable {
         super(s.getId(), s.getPostalCode(), s.getCity(), s.getCoordinate());
     }
     
-    /**
-     * Recherche le SwapLocation le plus proche de la position
-     * @param coordinate
-     * @return 
-     */
-    public SwapLocation getNear(Coordinate coordinate) {
-        SwapLocationDao swapLocationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getSwapLocationDao();
-        List<SwapLocation> list = (List<SwapLocation>)swapLocationManager.findAll();
-        
-        CoordinatesCalc calc = new CoordinatesCalc();
-        
-        SwapLocation nearSwap = null;
-        for(SwapLocation swap : list) {
-            if(nearSwap == null)
-                nearSwap = swap;
-            else try {
-                if(calc.getTotalTimeBetweenCoord(nearSwap.getCoordinate(), coordinate) > calc.getTotalTimeBetweenCoord(swap.getCoordinate(), coordinate))
-                    nearSwap = swap;
-            } catch (Exception ex) {
-                Logger.getLogger(SwapLocation.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        
-        return nearSwap;
-    }
-    
     @Override
     public String toString() {
         return "SwapLocation { " 
@@ -78,5 +52,33 @@ public class SwapLocation extends Location implements Serializable {
     public Collection<SwapLocation> allSwapLocations() {
         SwapLocationDao swapLocationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getSwapLocationDao();
         return swapLocationManager.findAll();
+    }
+    
+    /**
+     * Recherche le SwapLocation le plus proche de la position
+     * @param coordinate
+     * @return 
+     */
+    public SwapLocation getNear(Coordinate coordinate) {
+        SwapLocationDao swapLocationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getSwapLocationDao();
+        List<SwapLocation> list = (List<SwapLocation>)swapLocationManager.findAll();
+        
+        CoordinatesCalc calc = new CoordinatesCalc();
+        SwapLocation nearSwap = null;
+        
+        for(SwapLocation swap : list) {
+            if(nearSwap == null) {
+                nearSwap = swap;
+            } else {
+                try {
+                    if(calc.getTotalTimeBetweenCoord(nearSwap.getCoordinate(), coordinate) > calc.getTotalTimeBetweenCoord(swap.getCoordinate(), coordinate))
+                        nearSwap = swap;
+                } catch (Exception ex) {
+                    Logger.getLogger(SwapLocation.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        
+        return nearSwap;
     }
 }

@@ -2,7 +2,6 @@ package dao;
 
 import java.util.Collection;
 import javax.persistence.Query;
-import metier.Customer;
 import metier.SwapLocation;
 
 /**
