@@ -41,11 +41,14 @@
     </div>
     <div class="container">
         <jsp:useBean id="parameters" class="metier.RoutingParameters" />
+        <jsp:useBean id="depots" class="metier.Depot" />
+        <jsp:useBean id="swapLocations" class="metier.SwapLocation" />
+        <jsp:useBean id="customers" class="metier.Customer" />
         
         <h1 class="text-primary">Instance courante</h1>
         
         <h3 class="text-primary">Flotte</h3>
-        <table class="table table-striped">
+        <table class="table table-hover">
             <thead>
                 <th>Type</th>
                 <th>Capacité</th>
@@ -83,7 +86,7 @@
         </table>
         
         <h3 class="text-primary">Swap Actions</h3>
-        <table class="table table-striped">
+        <table class="table table-hover">
             <thead>
                 <th>Action</th>
                 <th>Temps (en sec)</th>
@@ -105,6 +108,62 @@
                     <td>PICKUP</td>
                     <td>${parameters.find().pickupTime}</td>
                 </tr>
+            </tbody>
+        </table>
+                
+        <h3 class="text-primary">Emplacements</h3>
+        <table class="table table-hover">
+            <thead>
+                <th>Type</th>
+                <th>ID</th>
+                <th>Code Postal</th>
+                <th>Ville</th>
+                <th>Coordonnée X</th>
+                <th>Coordonnée Y</th>
+                <th>Quantité commandée</th>
+                <th>Accessible</th>
+                <th>Temps de service (en sec)</th>
+            </thead>
+            <tbody>
+                <c:forEach var="depot" items="${depots.allDepots()}">
+                    <tr class="danger">
+                        <td>DÉPÔT</td>
+                        <td>${depot.id}</td>
+                        <td>${depot.postalCode}</td>
+                        <td>${depot.city}</td>
+                        <td>${depot.coordinate.coordX}</td>
+                        <td>${depot.coordinate.coordY}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </c:forEach>
+                <c:forEach var="swapLocation" items="${swapLocations.allSwapLocations()}">
+                    <tr class="warning">
+                        <td>SWAP LOCATION</td>
+                        <td>${swapLocation.id}</td>
+                        <td>${swapLocation.postalCode}</td>
+                        <td>${swapLocation.city}</td>
+                        <td>${swapLocation.coordinate.coordX}</td>
+                        <td>${swapLocation.coordinate.coordY}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </c:forEach>
+                <c:forEach var="customer" items="${customers.allCustomers()}">
+                    <tr class="success">
+                        <td>CLIENT</td>
+                        <td>${customer.id}</td>
+                        <td>${customer.postalCode}</td>
+                        <td>${customer.city}</td>
+                        <td>${customer.coordinate.coordX}</td>
+                        <td>${customer.coordinate.coordY}</td>
+                        <td>${customer.orderedQty}</td>
+                        <td>${customer.accessible}</td>
+                        <td>${customer.serviceTime}</td>
+                    </tr>
+                </c:forEach>
             </tbody>
         </table>
     </div>
