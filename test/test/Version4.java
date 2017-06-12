@@ -35,7 +35,7 @@ import utils.Utils;
  *
  * @author clementruffin
  */
-public class Version3 {
+public class Version4 {
     
     static String filePath = "Projet2017/";
     static String fileNameFleet = "small_normal/Fleet.csv";
@@ -59,7 +59,7 @@ public class Version3 {
     RoutingParameters parameters;
     
     public static void main(String[] args) throws Exception {
-        Version3 test = new Version3();
+        Version4 test = new Version4();
         
         Utils.log("Démarrage");
         test.initialize();
@@ -130,6 +130,36 @@ public class Version3 {
                             addCustumer(tour, customer, true);
                             isServe = true;
                             break;                            
+                        }
+                    } else if(qty1Total > parameters.getBodyCapacity() && (tour.getLastTrailerQuantity() + customer.getOrderedQty()) <= parameters.getBodyCapacity() && !attached){                        
+                        //Si il n'y a plus de place dans la remorque 1 et que l'on a pas de 2éme remorque
+                        if(tour.getLastTrailerQuantity() == 0){ 
+                            //Si le camion a le temps de faire toute les actions
+                            SwapLocation swapLocation = canGoToSwapLocation(tour, customer);
+                            
+                            if(swapLocation != null) {
+                                addAttachedTrailerAndSwapLocation(tour, swapLocation, customer);
+                                isServe = true;
+                                break;
+                            }
+                        } else { //Si on a que le deuxième remorque
+                            //Récupérer le SwapLocation
+                            SwapLocation sp = tour.getSwapLocation();
+                            
+                            //Tps total : tourTps + go to client + go to SwapLocation + PickUp + go to Dépot
+                            double tpsTotal = tour.getTourTime()
+                                        + calc.getTimeBetweenCoord(tour.getLastRoute().getLocation().getCoordinate(), customer.getCoordinate())
+                                        + customer.getServiceTime()
+                                        + calc.getTimeBetweenCoord(customer.getCoordinate(), sp.getCoordinate())
+                                        + parameters.getPickupTime()
+                                        + getTimeReturn(sp.getCoordinate());
+                                    
+                            //Vérifie s'il reste de la place et que l'on a le temps
+                            if(tpsTotal <= parameters.getOperatingTime()) {
+                                addCustumer(tour, customer, false);
+                                isServe = true;
+                                break;
+                            }                                
                         }
                     }
                 }
@@ -268,6 +298,118 @@ public class Version3 {
     }
     
     /**
+     * Cette méthode permet de vérifie si le camion peut mettre en place un Swap
+     * @param tour
+     * @param c le client où l'on souhaite passer après le Swap
+     * @return le SwapLocation par lequel on passe
+     * @throws Exception 
+     */
+    public SwapLocation canGoToSwapLocation(Tour tour, Customer c) throws Exception {   
+        CoordinatesCalc calc = new CoordinatesCalc();
+        Depot depot = depotManager.find();     
+        double tpsTotal = 0;
+        
+        //Récupérer le 1er client
+        Customer c1 = (Customer) tour.getFirstCustomer().getLocation();
+        
+        //Récupérer le SwapLocation le plus proche du dépôt
+        SwapLocation swap = new SwapLocation();
+        swap = swap.getNear(c1.getCoordinate());
+        
+        //Calcul du temps de trajet du Dépot au swap + time to park + aller au client
+        tpsTotal += calc.getTimeBetweenCoord(depot.getCoordinate(), swap.getCoordinate())
+                 + parameters.getParkTime()
+                 + calc.getTimeBetweenCoord(swap.getCoordinate(), c1.getCoordinate());
+        
+        //Calcule le temps pour le reste de la tournée
+        List<Route> list = tour.getListRoutes();
+        tpsTotal += calculTime(list, 2, list.size());
+        
+        //Calcul tps last client to Swap + tps to swap + tps Swap to client que l'on souhaite ajouter
+        tpsTotal += calc.getTimeBetweenCoord(tour.getListRoutes().get(tour.getListRoutes().size() - 1).getLocation().getCoordinate(), swap.getCoordinate())
+                        + parameters.getSwapTime()
+                        + calc.getTimeBetweenCoord(swap.getCoordinate(), c.getCoordinate());
+        
+        //Calcul tps retour au SwapLocation + tps to PickUp + tps du retour dépot
+        tpsTotal += c.getServiceTime() 
+                    +calc.getTimeBetweenCoord(c.getCoordinate(), swap.getCoordinate()) 
+                    + parameters.getPickupTime()
+                    + getTimeReturn(swap.getCoordinate());
+        
+        if(tpsTotal <= parameters.getOperatingTime())
+            return swap;
+        return null;
+    }
+    
+    /**
+     * La fonction permet d'attache une remorque et de passer dans un Swaplocation
+     * @param t
+     * @param swapLocation
+     * @param c 
+     */
+    public void addAttachedTrailerAndSwapLocation(Tour t, SwapLocation swapLocation, Customer c) {
+        //Parcours les Routes pour attacher la remorque et modifier les positions permettant l'ajout du SwapLocation
+        List<Route> list = t.getListRoutes();
+        ListIterator<Route> iter = list.listIterator();
+        while (iter.hasNext()) {
+            Route r = iter.next();
+            if(r.getPosition() >= 2) {
+                //Modifie les positions des routes après le SwapLocation
+                 r.setPosition(r.getPosition() + 1);
+                 r.setLastTrailer(2);
+            } else if(r.getPosition() == 1) {
+                //Ajoute la remorque au dépot 
+                r.setLastTrailer(2);
+                r.setTrailerAttached(true);
+            }
+        }
+                
+        //Ajouter une route en position 2 pour déposer la remorque
+        Route route = new Route();
+        route.setTour(t);
+        route.setPosition(2);
+        route.setLocation(swapLocation);
+        route.setLocationType(LocationType.SWAP_LOCATION);
+        route.setTrailerAttached(true);
+        route.setFirstTrailer(1);
+        route.setLastTrailer(2);
+        route.setSwapAction(SwapAction.PARK);
+        route.setQty1(0);
+        route.setQty2(0);
+        list.add(route);
+               
+        //Ajoute une route à la suite pour aller au SwapLocation
+        route = new Route();
+        route.setTour(t);
+        route.setPosition(list.size()+ 1);
+        route.setLocation(swapLocation);
+        route.setLocationType(LocationType.SWAP_LOCATION);
+        route.setTrailerAttached(false);
+        route.setFirstTrailer(list.get(list.size() - 1).getFirstTrailer());
+        route.setLastTrailer(list.get(list.size() - 1).getLastTrailer());
+        route.setSwapAction(SwapAction.SWAP);
+        route.setQty1(0);
+        route.setQty2(0);
+        list.add(route);
+        
+        //Ajoute une route pour aller chez le client
+        route = new Route();
+        route.setTour(t);
+        route.setPosition(list.size() + 1);
+        route.setLocation(c);
+        route.setLocationType(LocationType.CUSTOMER);
+        route.setTrailerAttached(false);
+        route.setFirstTrailer(2);
+        route.setLastTrailer(1);
+        route.setSwapAction(SwapAction.NONE);
+        route.setQty1(0);
+        route.setQty2(c.getOrderedQty());
+        list.add(route);
+        
+        t.setListRoutes(list);
+    }
+    
+    /**
      * Méthode permet d'ajouter un client à une tournée déjà créé
      * @param t la tournée
      * @param c le client
@@ -357,6 +499,28 @@ public class Version3 {
         boolean attachTrailer = false;
         int firstTrailer = 1;
         int lastTrailer = 0;
+        
+        //Si le camions avait une remorque
+        SwapLocation sp = t.getSwapLocation();
+        if(sp != null) {
+            attachTrailer = true;
+            firstTrailer = 2;
+            lastTrailer = 1;
+            
+            //Dans état précédent
+            Route route = new Route();
+            route.setTour(t);
+            route.setPosition(listRoutes.size() + 1);
+            route.setLocation(sp);
+            route.setLocationType(LocationType.SWAP_LOCATION);
+            route.setTrailerAttached(false);
+            route.setFirstTrailer(last.getFirstTrailer());
+            route.setLastTrailer(last.getLastTrailer());
+            route.setSwapAction(SwapAction.PICKUP);
+            route.setQty1(0);
+            route.setQty2(0);
+            listRoutes.add(route);
+        }
         
         if(last.isTrailerAttached()) {
             attachTrailer = true;
