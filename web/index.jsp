@@ -102,9 +102,8 @@
                             tourDetail.truckTimeCost = ${tour.getTruckTimeCost()};
                             
                             tourDetail.trailersUsageCost = ${tour.getTrailerUsageCost()};
-                            tourDetail.firstTrailerCost = ${tour.getFirstTrailerDistanceCost()};
-                            tourDetail.lastTrailerCost = ${tour.getLastTrailerDistanceCost()};
-                                 
+                            tourDetail.trailerDistanceCost = ${tour.getTrailerDistanceCost()};
+                               
                             var tourMap = tours.get(tourDetail.id);
                             if (!tourMap) tourMap = new Array();
                             tourMap.push(tourDetail);

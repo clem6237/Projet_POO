@@ -272,7 +272,7 @@ public class Tour implements Serializable {
         return distanceTotal;
     }
     
-    public double getFirstTrailerDistance() throws Exception {
+    public double getTrailerDistance() throws Exception {
         CoordinatesCalc calc = new CoordinatesCalc();
         
         Coordinate lastCoordinate = null;
@@ -282,29 +282,7 @@ public class Tour implements Serializable {
             Location l = r.getLocation();
             
             if (lastCoordinate != null) {
-                if (r.isTrailerAttached() || r.getFirstTrailer() == 1) {
-                    distanceTotal += calc.getDistanceBetweenCoord(lastCoordinate, l.getCoordinate());
-                    lastCoordinate =  l.getCoordinate();
-                }
-            } else {
-                lastCoordinate =  l.getCoordinate();
-            }
-        }
-        
-        return distanceTotal;
-    }
-    
-    public double getLastTrailerDistance() throws Exception {
-        CoordinatesCalc calc = new CoordinatesCalc();
-        
-        Coordinate lastCoordinate = null;
-        double distanceTotal = 0;
-        
-        for(Route r : this.listRoutesOrdered()) {
-            Location l = r.getLocation();
-            
-            if (lastCoordinate != null) {
-                if (r.isTrailerAttached() || r.getFirstTrailer() == 2) {
+                if (r.isTrailerAttached()) {
                     distanceTotal += calc.getDistanceBetweenCoord(lastCoordinate, l.getCoordinate());
                     lastCoordinate =  l.getCoordinate();
                 }
@@ -384,8 +362,7 @@ public class Tour implements Serializable {
     
     public double getTotalTrailerCost() throws Exception {
         return getTrailerUsageCost()
-                + getFirstTrailerDistanceCost()
-                + getLastTrailerDistanceCost();
+                + getTrailerDistanceCost();
     }
     
     public double getTrailerUsageCost() {
@@ -393,18 +370,15 @@ public class Tour implements Serializable {
         
         Route r = this.getListRoutes().get(0);
         
-        if (r.isTrailerAttached()) {
-            return 2 * total;
-        } else {
+        if (r.isTrailerAttached() || r.getLastTrailer() != 0) {
             return total;
+        } else {
+            return 0;
         }
     }
     
-    public double getFirstTrailerDistanceCost() throws Exception {
-        return new CostCalc().getTrailerDistanceCost(this.getFirstTrailerDistance());
+    public double getTrailerDistanceCost() throws Exception {
+        return new CostCalc().getTrailerDistanceCost(this.getTrailerDistance());
     }
     
-    public double getLastTrailerDistanceCost() throws Exception {
-        return new CostCalc().getTrailerDistanceCost(this.getLastTrailerDistance());
-    }
 }
