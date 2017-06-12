@@ -60,16 +60,18 @@ public class Controleur extends HttpServlet {
         
         String action = request.getParameter("action");
         try (PrintWriter out = response.getWriter()) {
+            
             switch(action){
-                case "export":
+                
+                case "export": // Export CSV de la solution
+                    System.out.println("Export: OK");
                     this.exportSolution(request, response);
                     break;
                     
-                case "previous" :
+                case "previous" : // Page précédente
                     String vueP = request.getParameter("vue");
                     switch(vueP){
                         case "2" :
-                            //Info de la page d'import 2
                             System.out.println("Prev: Page 2 OK");
                             
                             nextPage = 1;
@@ -77,7 +79,6 @@ public class Controleur extends HttpServlet {
                             forward("/calcul.jsp", request, response);
                         break; 
                         case "3" :
-                            //Info de la page d'import 3
                             System.out.println("Prev: Page 3 OK");
                             
                             nextPage = 2;
@@ -89,10 +90,12 @@ public class Controleur extends HttpServlet {
                         break;
                     }
                     break;
+                    
                 default :
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "error");
                 break;
             }
+            
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -171,16 +174,18 @@ public class Controleur extends HttpServlet {
             
             switch(action){
             
-                case "next" :
+                case "next" : // Page suivante
                     
                     switch(vue){
                     
                         case "1" : 
-                            //On initialise le donnée de cette page en session
+                            System.out.println("Next: Page 1 OK");
+                            
+                            // Initialisation des données de la page en session
                             session.removeAttribute(ATT_SESSION_COORDINATES_FILE);
                             session.removeAttribute(ATT_SESSION_DISTANCES_FILE);
                             
-                            //Récupére les infos de la page
+                            // Récupération des infos de la page
                             if(coordinatesFile != null && !coordinatesFile.equals("") )
                                 session.setAttribute(ATT_SESSION_COORDINATES_FILE, coordinatesFile);
                             
@@ -192,20 +197,22 @@ public class Controleur extends HttpServlet {
                                 importCoord = true;
                             }
                             
-                            //Passe à la page suivante
+                            // Passage à la page suivante
                             nextPage = 2;
                             request.setAttribute("active", nextPage);
                             forward("/calcul.jsp", request, response);
                         break; 
                         
                         case "2" : 
-                            //On initialise le donnée de cette page en session
+                            System.out.println("Next: Page 2 OK");
+                            
+                            // Initialisation des données de la page en session
                             session.removeAttribute(ATT_SESSION_FLEET_FILE);
                             session.removeAttribute(ATT_SESSION_SWAPACTIONS_FILE);
                             
-                            //Récupére les infos de la page
+                            // Récupération des infos de la page
                             
-                            //Si un des fichiers est null, on reste sur la page
+                            // Si un des fichiers est NULL, on reste sur la page
                             if(fleetFile.equals("") || swapActionFile.equals("")) {
                                 if(fleetFile.equals(""))
                                     request.setAttribute("fleet", "error");
@@ -215,11 +222,11 @@ public class Controleur extends HttpServlet {
                                 request.setAttribute("active", 2);
                                 forward("/calcul.jsp", request, response);
                             } else {
-                                //On enregistre les fichiers en session
+                                // Enregistrement des fichiers en session
                                 session.setAttribute(ATT_SESSION_FLEET_FILE, fleetFile);
                                 session.setAttribute(ATT_SESSION_SWAPACTIONS_FILE, swapActionFile);
                                 
-                                //On passe à la page suivante
+                                // Passage à la page suivante
                                 nextPage = 3;
                                 request.setAttribute("active", nextPage);
                                 forward("/calcul.jsp", request, response);
@@ -233,11 +240,13 @@ public class Controleur extends HttpServlet {
                 break; 
                     
                 case "calcul" :
-                        //On initialise le donnée de cette page en session
+                        System.out.println("Calcul: OK");
+                        
+                        // Initialisation des données de la page en session
                         session.removeAttribute(ATT_SESSION_LOCATIONS_FILE);
                         
-                        //Récupére les infos de la page
-                        //Si le fichier est null, on reste sur la page
+                        // Récupération des infos de la page
+                        // Si le fichier est NULL, on reste sur la page
                         if(locationsFile.equals("")) {
                             request.setAttribute("locations", "error");
                             request.setAttribute("active", 3);
@@ -245,7 +254,7 @@ public class Controleur extends HttpServlet {
                         } else {
                             session.setAttribute(ATT_SESSION_LOCATIONS_FILE, locationsFile);
                             
-                            //On lance le calcul
+                            // Lancement du calcul
                             this.importFiles(request, response);
                             this.calcSolution(request, response);
                             
@@ -277,9 +286,14 @@ public class Controleur extends HttpServlet {
         rd.forward(request, response);
     }
     
+    /**
+     * Importe les fichiers uploadés par l'utilisateur dans la base de données
+     * @param request
+     * @param response 
+     */
     public void importFiles(HttpServletRequest request, HttpServletResponse response) {
+        
         try {
-            
             ImportBase.resetSolution();
             
             if (importCoord) {
@@ -298,8 +312,14 @@ public class Controleur extends HttpServlet {
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
     }
     
+    /**
+     * Lance le calcul de la solution optimale de livraison
+     * @param request
+     * @param response 
+     */
     public void calcSolution(HttpServletRequest request, HttpServletResponse response) {
         SolutionCalc calc = new SolutionCalc();
         
@@ -311,8 +331,15 @@ public class Controleur extends HttpServlet {
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
     }
     
+    /**
+     * Exporte la solution générée en fichier CSV
+     * @param request
+     * @param response
+     * @throws Exception 
+     */
     public void exportSolution(HttpServletRequest request, HttpServletResponse response) throws Exception {
         response.setContentType("application/csv");
         response.setHeader("content-disposition","filename=Solution.csv"); // set the file name to whatever required..

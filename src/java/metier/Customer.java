@@ -88,35 +88,35 @@ public class Customer extends Location implements Serializable, Comparable<Custo
                 + " } \n";
     }
 
+    public Collection<Customer> allCustomers() {
+        CustomerDao customerManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCustomerDao();
+        return customerManager.findAll();
+    }
+    
     @Override
     public int compareTo(Customer o) {
         DepotDao depotManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getDepotDao();
         Coordinate coordDepot = depotManager.find().getCoordinate();
         
-       /* if(this.isAccessible() != o2.isAccessible()) {
-            return ! o1.isAccessible() ? - 1 : 1;
-        } else {*/
-            CoordinatesCalc calc = new CoordinatesCalc();
-            double distanceC1 = 0.0, distanceC2 = 0.0;
-            try {
-                distanceC1 = calc.getTimeBetweenCoord(this.getCoordinate(), coordDepot);
-                distanceC2 = calc.getTimeBetweenCoord(o.getCoordinate(), coordDepot);
-            } catch (Exception ex) {
-                Logger.getLogger(Customer.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            //Lequel est le plus proche du dépot     
-            int distanceComp = Double.compare(distanceC1, distanceC2);
-            if(distanceComp == 0) {
-                //S'il sont à la même distance
-                return Double.compare(this.getOrderedQty(), o.getOrderedQty());
-            } else 
-                return distanceComp;
-       // }      
-    }    
+        CoordinatesCalc calc = new CoordinatesCalc();
+        double distanceC1 = 0.0, distanceC2 = 0.0;
+        
+        try {
             
-    public Collection<Customer> allCustomers() {
-        CustomerDao customerManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getCustomerDao();
-        return customerManager.findAll();
-    }
+            distanceC1 = calc.getTimeBetweenCoord(this.getCoordinate(), coordDepot);
+            distanceC2 = calc.getTimeBetweenCoord(o.getCoordinate(), coordDepot);
+            
+        } catch (Exception ex) {
+            Logger.getLogger(Customer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        // Lequel est le plus proche du dépot     
+        int distanceComp = Double.compare(distanceC1, distanceC2);
+        
+        if(distanceComp == 0) {
+            // S'il sont à la même distance
+            return Double.compare(this.getOrderedQty(), o.getOrderedQty());
+        } else 
+            return distanceComp;
+    }    
 }
