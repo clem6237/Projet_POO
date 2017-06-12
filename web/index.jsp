@@ -46,6 +46,9 @@
                             <a href="calcul.jsp">Nouveau Calcul</a>
                         </li>
                         <li>
+                            <a href="instance.jsp">Voir l'instance</a>
+                        </li>
+                        <li>
                             <a href="Controleur?action=export">Exporter en CSV</a>
                         </li>
                     </ul>
