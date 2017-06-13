@@ -70,7 +70,7 @@ public class SolutionCalc {
     public void scanCustomerRequests() throws Exception {
         CoordinatesCalc calc = new CoordinatesCalc();
         
-        List<Tour> tournees = new ArrayList();        
+        List<Tour> tournees = new ArrayList();
         List<Customer> allCustomers = (List<Customer>) customerManager.findAll();
         Collections.sort(allCustomers);
         
@@ -157,15 +157,8 @@ public class SolutionCalc {
         
         //Vérifie si on a besoin d'un train
         boolean attachTrailer = false;
-
         if (customer.getOrderedQty() > parameters.getBodyCapacity()) {
-            if (!customer.isAccessible()) {
-                Utils.log("ERREUR - Livraison impossible (Client '" + customer.getId() + "' -> " 
-                     + customer.getOrderedQty() + " / " + parameters.getBodyCapacity() + " <=> NON ACCESSIBLE)");
-                return null;
-            } else {
-                attachTrailer = true;
-            }
+            attachTrailer = true;
         }
                 
         Tour tour = new Tour();
@@ -291,28 +284,32 @@ public class SolutionCalc {
         SwapLocation swap = new SwapLocation();
         swap = swap.getNear(c1.getCoordinate());
         
-        //Calcul du temps de trajet du Dépot au swap + time to park + aller au client
-        tpsTotal += calc.getTimeBetweenCoord(depot.getCoordinate(), swap.getCoordinate())
-                 + parameters.getParkTime()
-                 + calc.getTimeBetweenCoord(swap.getCoordinate(), c1.getCoordinate());
+        if(swap != null) {
+            //Calcul du temps de trajet du Dépot au swap + time to park + aller au client et le servir
+            tpsTotal += calc.getTimeBetweenCoord(depot.getCoordinate(), swap.getCoordinate())
+                     + parameters.getParkTime()
+                     + calc.getTimeBetweenCoord(swap.getCoordinate(), c1.getCoordinate())
+                     + c1.getServiceTime();
+
+            //Calcule le temps pour le reste de la tournée
+            List<Route> list = tour.getListRoutes();
+            tpsTotal += calculTime(list, 2, list.size());
+
+            //Calcul tps last client to Swap + tps to swap + tps Swap to client que l'on souhaite ajouter
+            tpsTotal += calc.getTimeBetweenCoord(tour.getListRoutes().get(tour.getListRoutes().size() - 1).getLocation().getCoordinate(), swap.getCoordinate())
+                     + parameters.getSwapTime()
+                     + calc.getTimeBetweenCoord(swap.getCoordinate(), c.getCoordinate());
+
+            //Calcul tps retour au SwapLocation + tps to PickUp + tps du retour dépot
+            tpsTotal += c.getServiceTime() 
+                     +calc.getTimeBetweenCoord(c.getCoordinate(), swap.getCoordinate()) 
+                     + parameters.getPickupTime()
+                     + getTimeReturn(swap.getCoordinate());
+
+            if(tpsTotal <= parameters.getOperatingTime())
+                return swap;
+        }
         
-        //Calcule le temps pour le reste de la tournée
-        List<Route> list = tour.getListRoutes();
-        tpsTotal += calculTime(list, 2, list.size());
-        
-        //Calcul tps last client to Swap + tps to swap + tps Swap to client que l'on souhaite ajouter
-        tpsTotal += calc.getTimeBetweenCoord(tour.getListRoutes().get(tour.getListRoutes().size() - 1).getLocation().getCoordinate(), swap.getCoordinate())
-                        + parameters.getSwapTime()
-                        + calc.getTimeBetweenCoord(swap.getCoordinate(), c.getCoordinate());
-        
-        //Calcul tps retour au SwapLocation + tps to PickUp + tps du retour dépot
-        tpsTotal += c.getServiceTime() 
-                    +calc.getTimeBetweenCoord(c.getCoordinate(), swap.getCoordinate()) 
-                    + parameters.getPickupTime()
-                    + getTimeReturn(swap.getCoordinate());
-        
-        if(tpsTotal <= parameters.getOperatingTime())
-            return swap;
         return null;
     }
     

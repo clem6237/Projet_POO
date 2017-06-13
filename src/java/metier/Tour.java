@@ -51,6 +51,11 @@ public class Tour implements Serializable {
     public Tour() {
         this.listRoutes = new ArrayList();
     }
+    
+    public Tour(Tour t) {
+        this.id = t.getId();
+        this.listRoutes = t.getListRoutes();
+    }
 
     public Tour(List<Route> listRoutes) {
         this.listRoutes = listRoutes;
@@ -154,40 +159,31 @@ public class Tour implements Serializable {
     
     public double getTourTime() throws Exception {
         CoordinatesCalc calc = new CoordinatesCalc();
-        
-        RoutingParametersDao parametersManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao();
-        RoutingParameters parameters = parametersManager.find();
+        RoutingParameters parameters = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao().find();
         
         Coordinate lastCoordinate = null;
         double timeTotal = 0;
         
-        double serv = 0.0, swap = 0.0;
         for(Route r : this.getListRoutes()) {
             Location l = r.getLocation();
             //Si c'est un client, on ajoute le temps de service
             if(r.getLocationType() == LocationType.CUSTOMER) {
                 Customer c = (Customer) r.getLocation();
                 timeTotal += c.getServiceTime();
-                serv += c.getServiceTime();
             } else if(r.getLocationType() == LocationType.SWAP_LOCATION) {
                 switch(r.getSwapAction()) {
                     case PARK:
                         timeTotal += parameters.getParkTime();
-                        swap += parameters.getParkTime();
                         break;
                     case PICKUP:
                         timeTotal += parameters.getPickupTime();
-                        swap += parameters.getPickupTime();
                         break;
                     case SWAP:
                         timeTotal += parameters.getSwapTime();
-                        swap += parameters.getSwapTime();
                         break;
                     case EXCHANGE:
                         timeTotal += parameters.getExchangeTime();
-                        swap += parameters.getExchangeTime();
                         break;
-                        
                 }
             }
             
