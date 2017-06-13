@@ -108,6 +108,9 @@ function initialize() {
 }
 
 function calcItineraire(id) {
+    var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var labelIndex = 0;
+    
     map = new google.maps.Map(document.getElementById("maps"), {});
     map.setZoom(4);
     
@@ -145,6 +148,7 @@ function calcItineraire(id) {
     
     var title;
     var icon;
+    var label = "";
     var location;
     
     /* POINT DE DÉPART */
@@ -170,7 +174,8 @@ function calcItineraire(id) {
             icon = 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png';
         } else if (location.locationType === "CUSTOMER") {
             title = "Client " + location.locationId + "<br/>" + location.postalCode + " - " + location.city;
-            icon = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
+            label = labels[labelIndex++ % labels.length];
+            icon = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + label + "|00FF00|000000";
         }
         
         createMarker(map, waypts[i].location, title, icon);
@@ -181,7 +186,7 @@ function calcItineraire(id) {
     var tourQuantity = tour[0].quantity;
     var tourTime = tour[0].time / 60;
     var tourTotalCost = tour[0].totalCost;
-    
+   
     document.getElementById("tourFilling").innerHTML = tourQuantity + " / " + (routeInfos[0].trailer ? (2 * tourCapacity + " unités (mode train)") : (tourCapacity + " unités (mode camion)"));
     document.getElementById("tourTransitTime").innerHTML = tourTime.toFixed(2) + " / " + tourOperatingTime.toFixed(2) + " minutes";
     document.getElementById("tourTotalCost").innerHTML = tourTotalCost.toFixed(2) + " €";
@@ -195,12 +200,12 @@ function calcItineraire(id) {
             tourTime / tourOperatingTime * 100);
 }
 
-function createMarker(map, latlng, label, icon) {
+function createMarker(map, latlng, title, icon) {
     var marker = new google.maps.Marker({
         position: latlng,
         map: map,
         icon: icon,
-        title: label,
+        title: title,
         zIndex: Math.round(latlng.lat() * -100000) << 5
     });
 
