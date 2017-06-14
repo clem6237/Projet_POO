@@ -12,6 +12,9 @@ import dao.RouteDao;
 import dao.RoutingParametersDao;
 import dao.SwapLocationDao;
 import dao.TourDao;
+import edu.wlu.cs.levy.CG.KDTree;
+import edu.wlu.cs.levy.CG.KeyDuplicateException;
+import edu.wlu.cs.levy.CG.KeySizeException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -19,8 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import metier.Customer;
 import metier.Depot;
 import metier.LocationType;
@@ -63,6 +64,8 @@ public class Version5 {
     
     RoutingParameters parameters;
     Depot depot;
+    
+    KDTree<Customer> kdTree;
     
     public static void main(String[] args) throws Exception {
         Version5 test = new Version5();
@@ -114,10 +117,10 @@ public class Version5 {
     public void scanCustomerRequests() throws Exception {
         int nbNotAdd = 0;
         CoordinatesCalc calc = new CoordinatesCalc();
-        
-        //List<Tour> tournees = new ArrayList();        
+               
         List<Customer> allCustomers = (List<Customer>) customerManager.findAll();
         Collections.sort(allCustomers);
+        
         allCustomers = orderList(allCustomers);
         System.out.println("Order List OK");
         
@@ -212,44 +215,38 @@ public class Version5 {
         Utils.log("Tournées créées");
     }
     
-    public List<Customer> orderList(List<Customer> allCustomers) {
+    public List<Customer> orderList(List<Customer> allCustomers) throws KeySizeException, KeyDuplicateException {
         CoordinatesCalc calc = new CoordinatesCalc(); 
         
         List<Customer> list = new ArrayList<>();
         Customer nearCustomer = null;
         int nearCustomerId = 0;
         
+        list.add(allCustomers.get(0));
+        allCustomers.remove(0);
+        
         while(! allCustomers.isEmpty()) {
-            for(int j=0; j < allCustomers.size(); j++) {
-                Customer customer = allCustomers.get(j);
-                if(list.isEmpty()) {
-                    nearCustomerId = j;
-                    nearCustomer = customer;
-                    break;
-                } else {
-                    if(nearCustomer == null) {
-                        nearCustomerId = j;
-                        nearCustomer = customer;
-                    } else {
-                        //On cherche le plus proche du dernier client
-                        try {
-                            double timeC1 = calc.getDistanceBetweenCoord(nearCustomer.getCoordinate(), list.get(list.size() - 1).getCoordinate());
-                            double timeC2 = calc.getDistanceBetweenCoord(customer.getCoordinate(), list.get(list.size() - 1).getCoordinate());
 
-                            if(timeC2 < timeC1){
-                                nearCustomerId = j;
-                                nearCustomer = customer;
-                            }
-                        } catch (Exception ex) {
-                            Logger.getLogger(Customer.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                }
+            kdTree = new KDTree<Customer>(2);
+            double x[] = new double[2];
+            
+            for (Customer c : allCustomers) {
+                x[0] = c.getCoordinate().getCoordX();
+                x[1] = c.getCoordinate().getCoordY();
+                kdTree.insert(x, c);
             }
             
+            Customer customer = list.get(list.size() - 1);
+            double sx = customer.getCoordinate().getCoordX();
+            double sy = customer.getCoordinate().getCoordY();
+
+            double s[] = { sx, sy };
+            nearCustomer = (Customer) kdTree.nearest(s);
+            System.out.println(nearCustomer.getId() + " : " + nearCustomer.getCoordinate().getCoordX() + " - " + nearCustomer.getCoordinate().getCoordY());
+            
             list.add(nearCustomer);
+            allCustomers.remove(nearCustomer);
             nearCustomer = null;
-            allCustomers.remove(nearCustomerId);
         }
         
         return list;
