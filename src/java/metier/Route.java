@@ -206,7 +206,7 @@ public class Route implements Serializable, Comparable<Route> {
     
     @Override
     public int compareTo(Route o) {
-          return Integer.compare(this.getPosition(), o.getPosition());
+        return Integer.compare(this.getPosition(), o.getPosition());
     }
 
     @Override
