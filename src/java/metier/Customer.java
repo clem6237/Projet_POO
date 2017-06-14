@@ -26,7 +26,7 @@ import utils.CoordinatesCalc;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Customer.findAll", query = "SELECT c FROM Customer c"),
-    @NamedQuery(name = "Customer.findById", query = "SELECT c FROM Customer c WHERE c.id = :id"),})
+    @NamedQuery(name = "Customer.findById", query = "SELECT c FROM Customer c WHERE c.id = :id")})
 public class Customer extends Location implements Serializable, Comparable<Customer> {
 
     @Basic(optional = false)
