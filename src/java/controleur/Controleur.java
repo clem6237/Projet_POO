@@ -6,6 +6,7 @@ import dao.RouteDao;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -324,9 +325,17 @@ public class Controleur extends HttpServlet {
         SolutionCalc calc = new SolutionCalc();
         
         try {
-            
             calc.initialize();
+            
+            Date start = new Date();
+            Utils.log("SOLUTION - Début calcul à " + start.toString());
+            
             calc.scanCustomerRequests();
+            
+            Date end = new Date();
+            long diffInMillies = end.getTime() - start.getTime();
+            Utils.log("SOLUTION - Fin calcul à " + end.toString());
+            Utils.log("SOLUTION - Calcul en " + diffInMillies);
             
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
