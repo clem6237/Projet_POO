@@ -466,6 +466,12 @@ public class Version5 {
         return tpsTotal;
     }
     
+    /**
+     * Methode vérifie s'il on peut passer en mode camion
+     * @param t le tour en cours
+     * @param c le client à ajouter
+     * @return un boolean
+     */
     public boolean canAddTrailer(Tour t, Customer c) {
         for(Route r : t.getListRoutes()) {
             if(r.getLocationType() == LocationType.CUSTOMER)
@@ -476,6 +482,12 @@ public class Version5 {
         return c.isAccessible();
     }
     
+    /**
+     * Méthode tranforme la tournée en mode train et ajoute le client
+     * @param t
+     * @param c
+     * @throws Exception 
+     */
     public void addTrailer(Tour t, Customer c) throws Exception {
           for(Route r : t.getListRoutes()) {
               r.setLastTrailer(2);
