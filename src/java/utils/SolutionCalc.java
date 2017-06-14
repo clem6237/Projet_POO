@@ -12,6 +12,9 @@ import dao.RouteDao;
 import dao.RoutingParametersDao;
 import dao.SwapLocationDao;
 import dao.TourDao;
+import edu.wlu.cs.levy.CG.KDTree;
+import edu.wlu.cs.levy.CG.KeyDuplicateException;
+import edu.wlu.cs.levy.CG.KeySizeException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +48,7 @@ public class SolutionCalc {
     
     RoutingParameters parameters;
     Depot depot;
+    KDTree<Customer> kdTree;
     
     /**
      * Supprime les tournées enregistrées
@@ -74,41 +78,49 @@ public class SolutionCalc {
      * @throws Exception 
      */
     public void scanCustomerRequests() throws Exception {
+        int nbNotAdd = 0;
         CoordinatesCalc calc = new CoordinatesCalc();
         
-        List<Tour> tournees = new ArrayList();        
+        //List<Tour> tournees = new ArrayList();        
         List<Customer> allCustomers = (List<Customer>) customerManager.findAll();
         Collections.sort(allCustomers);
         
-        for (Customer customer : allCustomers) {
-            //Regarde tout les tournées
-            if(tournees.isEmpty()) {
-                //System.out.println("NewTour For : "+customer.getId());
-                //Création d'un nouveau tour
-                tournees.add(createNewTour(customer));
-            } else {
-                ListIterator<Tour> iter = tournees.listIterator();
-                boolean isServe = false;
-                while (iter.hasNext()) {
-                    Tour tour = iter.next();
+        allCustomers = orderList(allCustomers);
+        System.out.println("Order List OK");
+        
+        while(! allCustomers.isEmpty()) {
+            System.out.println("New Tour : "+allCustomers.size());
+            Tour tour = new Tour();
+            ListIterator<Customer> iter = allCustomers.listIterator();
+            while (iter.hasNext()) {
+                Customer customer = iter.next();
+                System.out.println("New customer: "+ customer.getId());
+                
+                if(tour.getListRoutes().isEmpty()) {
+                    System.out.println("Add Fisrt customer to Tour :"+customer.getId());
+                    createNewTour(tour, customer);
+                    iter.remove();
+                    nbNotAdd = 0; 
+                } else {
                     //Vérifie si on a la place pour le client
                     double qty1Total = tour.getFirstTrailerQuantity()+ customer.getOrderedQty();
                     double tourTotal = tour.getTourQuantity()+ customer.getOrderedQty();
 
                     //Si le camion a une remorque
                     boolean attached = ((Route) tour.getListRoutes().get(tour.getListRoutes().size() - 1)).isTrailerAttached();
-
+                    
                     if ((qty1Total < parameters.getBodyCapacity() && !attached) || (tourTotal < parameters.getBodyCapacity() * 2 && attached && customer.isAccessible())) {
-                        //System.out.println(customer.getId() + " - First : "+(qty1Total < parameters.getBodyCapacity() && !attached));
-                        //System.out.println("Or Second : "+(tourTotal < parameters.getBodyCapacity() * 2 && attached && customer.isAccessible()));
                         //Vérifie si on a le tps
                         if(canAddCostumer(tour, customer)) {
-                            //System.out.println("AddCustomer: "+customer.getId());
+                            System.out.println("AddCustomer: "+customer.getId());
                             //Ajoute la route      
                             addCustumer(tour, customer, true);
-                            isServe = true;
-                            break;                            
+                            iter.remove();
+                            nbNotAdd = 0;                 
+                        } else {
+                            nbNotAdd++;
                         }
+                            
                     } else if(qty1Total > parameters.getBodyCapacity() && (tour.getLastTrailerQuantity() + customer.getOrderedQty()) <= parameters.getBodyCapacity() && !attached){                        
                         //Si il n'y a plus de place dans la remorque 1 et que l'on a pas de 2éme remorque
                         if(tour.getLastTrailerQuantity() == 0){ 
@@ -116,16 +128,12 @@ public class SolutionCalc {
                             SwapLocation swapLocation = canGoToSwapLocation(tour, customer);
                             
                             if(swapLocation != null) {
-                                //System.out.println("addAttachedTrailer: "+customer.getId());
+                                System.out.println("addAttachedTrailer: "+customer.getId());
                                 addAttachedTrailerAndSwapLocation(tour, swapLocation, customer);
-                                
-                                double tpsTotal = tour.getTourTime()
-                                        + calc.getTimeBetweenCoord(customer.getCoordinate(), swapLocation.getCoordinate())
-                                        + parameters.getPickupTime()
-                                        + calc.getTimeBetweenCoord(swapLocation.getCoordinate(), depot.getCoordinate());
-                                //System.out.println("Temps total After : "+tpsTotal);
-                                isServe = true;
-                                break;
+                                iter.remove();
+                                nbNotAdd = 0;
+                            } else {
+                                nbNotAdd++;
                             }
                         } else { //Si on a que le deuxième remorque
                             //Récupérer le SwapLocation
@@ -141,54 +149,84 @@ public class SolutionCalc {
                                     
                             //Vérifie s'il reste de la place et que l'on a le temps
                             if(tpsTotal <= parameters.getOperatingTime()) {
-                                //System.out.println("AddCustomer in Second: "+customer.getId()+" / tps:"+ tpsTotal);
+                                System.out.println("AddCustomer in Second: "+customer.getId()+" / tps:"+ tpsTotal);
                                 addCustumer(tour, customer, false);
-                                isServe = true;                                
-                                
-                                /*double tps = tour.getTourTime()
-                                        + calc.getTimeBetweenCoord(customer.getCoordinate(), sp.getCoordinate())
-                                        + parameters.getPickupTime()
-                                        + calc.getTimeBetweenCoord(sp.getCoordinate(), depot.getCoordinate());*/
-                                //System.out.println("Temps total After : "+tps);
-                                break;
-                            }                                
+                                iter.remove();
+                                nbNotAdd = 0; 
+                            } else {
+                                nbNotAdd++;
+                            }                              
                         }
+                    } else {
+                        nbNotAdd++;
+                    }
+                    
+                    if(nbNotAdd == 10){
+                        break;
                     }
                 }
-                
-                if(! isServe) {
-                    //System.out.println("NewTour For : "+customer.getId());
-                    //Création d'un nouveau tour
-                    iter.add(createNewTour(customer));
-                }
+                        
             }
-        }
-        
-        //Termine toutes les tournées
-        int i = 0;
-        for(Tour t : tournees) {
-            i++;
-            endedTour(t);
-            System.out.println("Time "+i+": "+ t.getTourTime());
+            
+            System.out.println("Finish Tour");
+            endedTour(tour);
         }
         
         Utils.log("Tournées créées");
     }
     
+    public List<Customer> orderList(List<Customer> allCustomers) throws KeySizeException, KeyDuplicateException {
+        CoordinatesCalc calc = new CoordinatesCalc(); 
+        
+        List<Customer> list = new ArrayList<>();
+        Customer nearCustomer = null;
+        int nearCustomerId = 0;
+        
+        list.add(allCustomers.get(0));
+        allCustomers.remove(0);
+        
+        while(! allCustomers.isEmpty()) {
+
+            kdTree = new edu.wlu.cs.levy.CG.KDTree<Customer>(2);
+            double x[] = new double[2];
+            
+            for (Customer c : allCustomers) {
+                x[0] = c.getCoordinate().getCoordX();
+                x[1] = c.getCoordinate().getCoordY();
+                kdTree.insert(x, c);
+            }
+            
+            Customer customer = list.get(list.size() - 1);
+            double sx = customer.getCoordinate().getCoordX();
+            double sy = customer.getCoordinate().getCoordY();
+
+            double s[] = { sx, sy };
+            nearCustomer = (Customer) kdTree.nearest(s);
+            System.out.println(nearCustomer.getId() + " : " + nearCustomer.getCoordinate().getCoordX() + " - " + nearCustomer.getCoordinate().getCoordY());
+            
+            list.add(nearCustomer);
+            allCustomers.remove(nearCustomer);
+            nearCustomer = null;
+        }
+        
+        System.out.println("List: "+list.size());
+        return list;
+    }
+    
     /**
      * La méthode crée une nouveau tour
      * @param customer client à visiter
-     * @return tour créé
+     * @param tour tour à initialiser
      * @throws Exception 
      */
-    public Tour createNewTour(Customer customer) throws Exception {  
+    public void createNewTour(Tour tour, Customer customer) throws Exception {  
         //Vérifie si on a besoin d'un train
         boolean attachTrailer = false;
         if (customer.getOrderedQty() > parameters.getBodyCapacity()) {
             attachTrailer = true;
         }
                 
-        Tour tour = new Tour();
+        //Tour tour = new Tour();
         Route route;
         List<Route> listRoutes = new ArrayList();
         
@@ -219,7 +257,6 @@ public class SolutionCalc {
         listRoutes.add(route);
         
         tour.setListRoutes(listRoutes);
-        return tour;
     }
     
     /**
