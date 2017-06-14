@@ -127,7 +127,7 @@ public class Version5 {
             ListIterator<Customer> iter = allCustomers.listIterator();
             while (iter.hasNext()) {
                 Customer customer = iter.next();
-                System.out.println("New customer: "+ customer.getId());
+                //System.out.println("New customer: "+ customer.getId());
                 
                 if(tour.getListRoutes().isEmpty()) {
                     System.out.println("Add Fisrt customer to Tour :"+customer.getId());
@@ -156,7 +156,12 @@ public class Version5 {
                             
                     } else if(qty1Total > parameters.getBodyCapacity() && (tour.getLastTrailerQuantity() + customer.getOrderedQty()) <= parameters.getBodyCapacity() && !attached){                        
                         //Si il n'y a plus de place dans la remorque 1 et que l'on a pas de 2éme remorque
-                        if(tour.getLastTrailerQuantity() == 0){ 
+                        if(canAddTrailer(tour, customer)) {
+                            //Le camion devient un train
+                            addTrailer(tour, customer);
+                            iter.remove();
+                            nbNotAdd = 0;
+                        } else if(tour.getLastTrailerQuantity() == 0){ 
                             //Si le camion a le temps de faire toute les actions
                             SwapLocation swapLocation = canGoToSwapLocation(tour, customer);
                             
@@ -201,7 +206,6 @@ public class Version5 {
                         
             }
             
-            System.out.println("Finish Tour");
             endedTour(tour);
         }
         
@@ -216,7 +220,6 @@ public class Version5 {
         int nearCustomerId = 0;
         
         while(! allCustomers.isEmpty()) {
-            ListIterator<Customer> iter = allCustomers.listIterator();
             for(int j=0; j < allCustomers.size(); j++) {
                 Customer customer = allCustomers.get(j);
                 if(list.isEmpty()) {
@@ -230,8 +233,8 @@ public class Version5 {
                     } else {
                         //On cherche le plus proche du dernier client
                         try {
-                            double timeC1 = calc.getTimeBetweenCoord(nearCustomer.getCoordinate(), list.get(list.size() - 1).getCoordinate());
-                            double timeC2 = calc.getTimeBetweenCoord(customer.getCoordinate(), list.get(list.size() - 1).getCoordinate());
+                            double timeC1 = calc.getDistanceBetweenCoord(nearCustomer.getCoordinate(), list.get(list.size() - 1).getCoordinate());
+                            double timeC2 = calc.getDistanceBetweenCoord(customer.getCoordinate(), list.get(list.size() - 1).getCoordinate());
 
                             if(timeC2 < timeC1){
                                 nearCustomerId = j;
@@ -249,7 +252,6 @@ public class Version5 {
             allCustomers.remove(nearCustomerId);
         }
         
-        System.out.println("List: "+list.size());
         return list;
     }
     
@@ -265,8 +267,7 @@ public class Version5 {
         if (customer.getOrderedQty() > parameters.getBodyCapacity()) {
             attachTrailer = true;
         }
-                
-        //Tour tour = new Tour();
+        
         Route route;
         List<Route> listRoutes = new ArrayList();
         
@@ -342,6 +343,94 @@ public class Version5 {
     }
     
     /**
+     * Méthode permet d'ajouter un client à une tournée déjà créé
+     * @param t la tournée
+     * @param c le client
+     * @param inFirstTrailer si vaut true, la commande doit être ajouter dans la 1ére remorque
+     * @throws Exception 
+     */
+    public void addCustumer(Tour t, Customer c, boolean inFirstTrailer) throws Exception {
+        List<Route> listRoutes = t.getListRoutes();
+        
+        if(inFirstTrailer) {
+            //Récupére la route précédente
+            int position = t.getPositionOfSwap();
+            
+            if(position == 0) {
+                //On est jamais passer dans le SwapLocation
+                position = t.getListRoutes().size() + 1;
+                
+                //Récupérer la route précédente
+                Route r = t.getLastRoute();
+                
+                double Qty1 = (c.getOrderedQty() > parameters.getBodyCapacity() ? parameters.getBodyCapacity() : c.getOrderedQty());
+                double Qty2 = (c.getOrderedQty() > parameters.getBodyCapacity() ? c.getOrderedQty() - parameters.getBodyCapacity() : 0);
+                if(r.isTrailerAttached()) {
+                    Qty1 = (t.getFirstTrailerQuantity() + c.getOrderedQty() > parameters.getBodyCapacity() ? (parameters.getBodyCapacity() - t.getFirstTrailerQuantity()) : c.getOrderedQty());
+                    Qty2 = c.getOrderedQty() - (parameters.getBodyCapacity() - t.getFirstTrailerQuantity());
+                }
+                
+                //Ajoute une route à cette position
+                Route route = new Route();
+                route.setTour(t);
+                route.setPosition(position);
+                route.setLocation(c);
+                route.setLocationType(LocationType.CUSTOMER);
+                route.setTrailerAttached(r.isTrailerAttached());
+                route.setFirstTrailer(r.getFirstTrailer());
+                route.setLastTrailer(r.getLastTrailer());
+                route.setSwapAction(SwapAction.NONE);
+                route.setQty1(Qty1);
+                route.setQty2(Qty2);
+                listRoutes.add(route);
+
+                t.setListRoutes(listRoutes);
+            } else {
+                //Incrémente les positions des routes allant du SwapLocation jusqu'à la fin
+                for(int i = position - 1; i < listRoutes.size(); i++) {
+                    Route r = listRoutes.get(i);
+                    r.setPosition(r.getPosition() + 1);
+                    listRoutes.set(i, r);
+                }
+                
+                //Ajoute une route à cette position
+                Route route = new Route();
+                route.setTour(t);
+                route.setPosition(position);
+                route.setLocation(c);
+                route.setLocationType(LocationType.CUSTOMER);
+                route.setTrailerAttached(false);
+                route.setFirstTrailer(1);
+                route.setLastTrailer(2);
+                route.setSwapAction(SwapAction.NONE);
+                route.setQty1(c.getOrderedQty());
+                route.setQty2(0);
+                listRoutes.add(route);
+
+                t.setListRoutes(listRoutes);
+            }
+        } else {
+            //Récupére la dernière route pour avoir l'état du camion
+            Route last = t.getLastRoute();
+            
+            Route route = new Route();
+            route.setTour(t);
+            route.setPosition(listRoutes.size() + 1);
+            route.setLocation(c);
+            route.setLocationType(LocationType.CUSTOMER);
+            route.setTrailerAttached(last.isTrailerAttached());
+            route.setFirstTrailer(last.getFirstTrailer());
+            route.setLastTrailer(last.getLastTrailer());
+            route.setSwapAction(SwapAction.NONE);
+            route.setQty1(0);
+            route.setQty2(c.getOrderedQty());
+            listRoutes.add(route);
+            
+            t.setListRoutes(listRoutes);
+        }     
+    }
+    
+    /**
      * Cette méthode permet de calculer le temps de service pour une liste de route
      * @param list
      * @param begin 
@@ -378,6 +467,25 @@ public class Version5 {
         }
         
         return tpsTotal;
+    }
+    
+    public boolean canAddTrailer(Tour t, Customer c) {
+        for(Route r : t.getListRoutes()) {
+            if(r.getLocationType() == LocationType.CUSTOMER)
+                if(!((Customer) r.getLocation()).isAccessible())
+                    return false;
+        }
+        
+        return c.isAccessible();
+    }
+    
+    public void addTrailer(Tour t, Customer c) throws Exception {
+          for(Route r : t.getListRoutes()) {
+              r.setLastTrailer(2);
+              r.setTrailerAttached(true);
+          }
+          
+          addCustumer(t, c, true);
     }
     
     /**
@@ -495,87 +603,6 @@ public class Version5 {
         list.add(route);
         
         t.setListRoutes(list);
-    }
-    
-    /**
-     * Méthode permet d'ajouter un client à une tournée déjà créé
-     * @param t la tournée
-     * @param c le client
-     * @param inFirstTrailer si vaut true, la commande doit être ajouter dans la 1ére remorque
-     * @throws Exception 
-     */
-    public void addCustumer(Tour t, Customer c, boolean inFirstTrailer) throws Exception {
-        List<Route> listRoutes = t.getListRoutes();
-        
-        if(inFirstTrailer) {
-            //Récupére la route précédente
-            int position = t.getPositionOfSwap();
-            
-            if(position == 0) {
-                //On est jamais passer dans le SwapLocation
-                position = t.getListRoutes().size() + 1;
-                
-                //Récupérer la route précédente
-                Route r = t.getLastRoute();
-                
-                //Ajoute une route à cette position
-                Route route = new Route();
-                route.setTour(t);
-                route.setPosition(position);
-                route.setLocation(c);
-                route.setLocationType(LocationType.CUSTOMER);
-                route.setTrailerAttached(r.isTrailerAttached());
-                route.setFirstTrailer(r.getFirstTrailer());
-                route.setLastTrailer(r.getLastTrailer());
-                route.setSwapAction(SwapAction.NONE);
-                route.setQty1(c.getOrderedQty() > parameters.getBodyCapacity() ? parameters.getBodyCapacity() : c.getOrderedQty());
-                route.setQty2(c.getOrderedQty() > parameters.getBodyCapacity() ? c.getOrderedQty() - parameters.getBodyCapacity() : 0);
-                listRoutes.add(route);
-
-                t.setListRoutes(listRoutes);
-            } else {
-                //Incrémente les positions des routes allant du SwapLocation jusqu'à la fin
-                for(int i = position - 1; i < listRoutes.size(); i++) {
-                    Route r = listRoutes.get(i);
-                    r.setPosition(r.getPosition() + 1);
-                    listRoutes.set(i, r);
-                }
-                
-                //Ajoute une route à cette position
-                Route route = new Route();
-                route.setTour(t);
-                route.setPosition(position);
-                route.setLocation(c);
-                route.setLocationType(LocationType.CUSTOMER);
-                route.setTrailerAttached(false);
-                route.setFirstTrailer(1);
-                route.setLastTrailer(2);
-                route.setSwapAction(SwapAction.NONE);
-                route.setQty1(c.getOrderedQty());
-                route.setQty2(0);
-                listRoutes.add(route);
-
-                t.setListRoutes(listRoutes);
-            }
-        } else {
-            //Récupére la dernière route pour avoir l'état du camion
-            Route last = t.getLastRoute();
-            
-            Route route = new Route();
-            route.setTour(t);
-            route.setPosition(listRoutes.size() + 1);
-            route.setLocation(c);
-            route.setLocationType(LocationType.CUSTOMER);
-            route.setTrailerAttached(last.isTrailerAttached());
-            route.setFirstTrailer(last.getFirstTrailer());
-            route.setLastTrailer(last.getLastTrailer());
-            route.setSwapAction(SwapAction.NONE);
-            route.setQty1(0);
-            route.setQty2(c.getOrderedQty());
-            listRoutes.add(route);
-            
-            t.setListRoutes(listRoutes);
-        }     
     }
     
     public void endedTour(Tour t) throws Exception {
