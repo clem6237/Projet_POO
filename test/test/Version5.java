@@ -240,8 +240,8 @@ public class Version5 {
                         } catch (Exception ex) {
                             Logger.getLogger(Customer.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                    }                    
-                }                        
+                    }
+                }
             }
             
             list.add(nearCustomer);
