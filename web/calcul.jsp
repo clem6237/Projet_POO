@@ -38,7 +38,10 @@
           <ul class="nav navbar-nav">
             <li class="active">
               <a href="Controleur?action=previous&vue=2">Nouveau Calcul</a>
-            </li>            
+            </li>    
+            <li>
+                <a href="instance.jsp">Voir l'instance</a>
+            </li>
             <li>
               <a href="Controleur?action=export">Exporter en CSV</a>
             </li>
