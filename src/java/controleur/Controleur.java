@@ -125,6 +125,7 @@ public class Controleur extends HttpServlet {
         try {
             List<FileItem> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
         
+            // Récupération des valeurs passées en POST par le formulaire
             for (FileItem item : items) {
                 if (item.isFormField()) {
                     String fieldName = item.getFieldName();
@@ -139,7 +140,8 @@ public class Controleur extends HttpServlet {
                             break;
                     }
                     
-                } else {
+                } else { // Fichiers uploadés par l'utilisateur
+                    
                     String fieldName = item.getFieldName();
                     String fieldValue = item.getName();
                     
@@ -295,18 +297,24 @@ public class Controleur extends HttpServlet {
     public void importFiles(HttpServletRequest request, HttpServletResponse response) {
         
         try {
+            // Suppression des paramètres, tournées et emplacements
             ImportBase.resetSolution();
             
+            // Si l'utilisateur a uploadé les fichiers DistanceTimeCoordinates 
+            // et DistanceTimeData, on les importe. 
+            // Sinon, on conserve les anciennes données
             if (importCoord) {
                 ImportBase.importCoordinatesFromWeb(
                         files.get(ATT_SESSION_COORDINATES_FILE),
                         files.get(ATT_SESSION_DISTANCES_FILE));
             }
             
+            // Import des fichiers Fleet et SwapActions
             ImportBase.importParametersFromWeb(
                     files.get(ATT_SESSION_FLEET_FILE), 
                     files.get(ATT_SESSION_SWAPACTIONS_FILE));
 
+            // Import du fichier Locations
             ImportBase.importLocationsFromWeb(
                     files.get(ATT_SESSION_LOCATIONS_FILE));
             
@@ -323,19 +331,21 @@ public class Controleur extends HttpServlet {
      */
     public void calcSolution(HttpServletRequest request, HttpServletResponse response) {
         SolutionCalc calc = new SolutionCalc();
+        Date start, end;
         
         try {
+            // Initialisation des DAO (et suppression des tournées existantes)
             calc.initialize();
             
-            Date start = new Date();
-            Utils.log("SOLUTION - Début calcul à " + start.toString());
+            start = new Date();
+            Utils.log("Calcul démarré");
             
+            // Génération de la solution
             calc.scanCustomerRequests();
             
-            Date end = new Date();
+            end = new Date();
             long diffInMillies = end.getTime() - start.getTime();
-            Utils.log("SOLUTION - Fin calcul à " + end.toString());
-            Utils.log("SOLUTION - Calcul en " + diffInMillies);
+            Utils.log("Calcul effectué en " + diffInMillies + " ms");
             
         } catch (Exception ex) {
             Logger.getLogger(Controleur.class.getName()).log(Level.SEVERE, null, ex);
@@ -372,6 +382,7 @@ public class Controleur extends HttpServlet {
 
             boolean first = true;
 
+            // Ligne d'en-têtes
             for (String title : titles) {
                 if (first) {
                     first = false;
@@ -390,6 +401,7 @@ public class Controleur extends HttpServlet {
             int nbTour = 0;
             Tour lastTour = null;
 
+            // Parcours de l'ensemble des routes (ordonnées par tournée et position)
             for (Route route : listRoutes) {
                 String value = "";
 

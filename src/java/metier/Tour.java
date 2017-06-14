@@ -157,6 +157,11 @@ public class Tour implements Serializable {
         return routeManager.findByTour(this);
     }
     
+    /**
+     * Calcule le temps total de la tournée.
+     * @return
+     * @throws Exception 
+     */
     public double getTourTime() throws Exception {
         CoordinatesCalc calc = new CoordinatesCalc();
         RoutingParameters parameters = DaoFactory.getDaoFactory(PersistenceType.JPA).getRoutingParametersDao().find();
@@ -166,7 +171,9 @@ public class Tour implements Serializable {
         
         for(Route r : this.getListRoutes()) {
             Location l = r.getLocation();
-            //Si c'est un client, on ajoute le temps de service
+            
+            // Si c'est un client, on ajoute le temps de service
+            // Si c'est un swap location, on ajoute le temps d'opération
             if(r.getLocationType() == LocationType.CUSTOMER) {
                 Customer c = (Customer) r.getLocation();
                 timeTotal += c.getServiceTime();
@@ -198,6 +205,11 @@ public class Tour implements Serializable {
         return timeTotal;
     }
     
+    /**
+     * Calcule le temps total de la tournée (appel depuis le site web).
+     * @return
+     * @throws Exception 
+     */
     public double getTourTimeFromBase() throws Exception {
         CoordinatesCalc calc = new CoordinatesCalc();
         
@@ -207,33 +219,28 @@ public class Tour implements Serializable {
         Coordinate lastCoordinate = null;
         double timeTotal = 0;
         
-        double serv = 0.0, swap = 0.0;
         for(Route r : this.listRoutesOrdered()) {
             Location l = r.getLocation();
-            //Si c'est un client, on ajoute le temps de service
+            
+            // Si c'est un client, on ajoute le temps de service
+            // Si c'est un swap location, on ajoute le temps d'opération
             if(r.getLocationType() == LocationType.CUSTOMER) {
                 Customer c = (Customer) r.getLocation();
                 timeTotal += c.getServiceTime();
-                serv += c.getServiceTime();
             } else if(r.getLocationType() == LocationType.SWAP_LOCATION) {
                 switch(r.getSwapAction()) {
                     case PARK:
                         timeTotal += parameters.getParkTime();
-                        swap += parameters.getParkTime();
                         break;
                     case PICKUP:
                         timeTotal += parameters.getPickupTime();
-                        swap += parameters.getPickupTime();
                         break;
                     case SWAP:
                         timeTotal += parameters.getSwapTime();
-                        swap += parameters.getSwapTime();
                         break;
                     case EXCHANGE:
                         timeTotal += parameters.getExchangeTime();
-                        swap += parameters.getExchangeTime();
                         break;
-                        
                 }
             }
             
@@ -248,6 +255,11 @@ public class Tour implements Serializable {
         return timeTotal;
     }
     
+    /**
+     * Calcule la distance totale de la tournée.
+     * @return
+     * @throws Exception 
+     */
     public double getTourDistance() throws Exception {
         CoordinatesCalc calc = new CoordinatesCalc();
         
@@ -268,6 +280,11 @@ public class Tour implements Serializable {
         return distanceTotal;
     }
     
+    /**
+     * Calcule la distance effectuée par les remorques sur la tournée.
+     * @return
+     * @throws Exception 
+     */
     public double getTrailerDistance() throws Exception {
         CoordinatesCalc calc = new CoordinatesCalc();
         
@@ -290,6 +307,11 @@ public class Tour implements Serializable {
         return distanceTotal;
     }
     
+    /**
+     * Calcule la quantité de produit transportée sur la tournée.
+     * @return
+     * @throws Exception 
+     */
     public double getTourQuantity() throws Exception {
         double quantity = 0;
         
@@ -303,11 +325,16 @@ public class Tour implements Serializable {
         return quantity;
     }
     
+    /**
+     * Calcule la quantité de produit transportée par la première remorque.
+     * @return
+     * @throws Exception 
+     */
     public double getFirstTrailerQuantity() throws Exception {
         double quantity = 0;
         
         for(Route r : this.listRoutes) {
-            //Parcours chaque client
+            // Parcours chaque client
             if(r.getLocationType() == LocationType.CUSTOMER) {
                 quantity += r.getQty1();
             }
@@ -316,11 +343,16 @@ public class Tour implements Serializable {
         return quantity;
     }
     
+    /**
+     * Calcule la quantité de produit transportée par la deuxième remorque.
+     * @return
+     * @throws Exception 
+     */
     public double getLastTrailerQuantity() throws Exception {
         double quantity = 0;
         
         for(Route r : this.listRoutes) {
-            //Parcours chaque client
+            // Parcours chaque client
             if(r.getLocationType() == LocationType.CUSTOMER) {
                 quantity += r.getQty2();
             }
@@ -329,6 +361,11 @@ public class Tour implements Serializable {
         return quantity;
     }
     
+    /**
+     * Calcule le coût total de la tournée (camion + remorque).
+     * @return
+     * @throws Exception 
+     */
     public double getTotalCost() throws Exception {
         double total = 0;
         
@@ -338,29 +375,57 @@ public class Tour implements Serializable {
         return total;
     }
     
+    /**
+     * Calcule le coût total du camion sur la tournée.
+     * @return
+     * @throws Exception 
+     */
     public double getTotalTruckCost() throws Exception {
         return getTruckUsageCost()
                 + getTruckDistanceCost() 
                 + getTruckTimeCost();
     }
     
+    /**
+     * Calcule le coût d'utilisation du camion.
+     * @return 
+     */
     public double getTruckUsageCost() {
         return new CostCalc().getTruckUsageCost();
     }
     
+    /**
+     * Calcule le coût kilométrique du camion.
+     * @return
+     * @throws Exception 
+     */
     public double getTruckDistanceCost() throws Exception {
         return new CostCalc().getTruckDistanceCost(this.getTourDistance());
     }
     
+    /**
+     * Calcule le coût horaire du camion.
+     * @return
+     * @throws Exception 
+     */
     public double getTruckTimeCost() throws Exception {
         return new CostCalc().getTruckTimeCost(this.getTourTimeFromBase());
     }
     
+    /**
+     * Calcule le coût total de la remorque sur la tournée.
+     * @return
+     * @throws Exception 
+     */
     public double getTotalTrailerCost() throws Exception {
         return getTrailerUsageCost()
                 + getTrailerDistanceCost();
     }
     
+    /**
+     * Calcule le coût d'utilisation de la remorque.
+     * @return 
+     */
     public double getTrailerUsageCost() {
         double total = new CostCalc().getTrailerUsageCost();
         
@@ -369,10 +434,15 @@ public class Tour implements Serializable {
         if (r.isTrailerAttached() || r.getLastTrailer() != 0) {
             return total;
         } else {
-            return 0;
+            return 0; // En mode camion, pas de surcoût
         }
     }
     
+    /**
+     * Calcule le coût kilométrique de la remorque.
+     * @return
+     * @throws Exception 
+     */
     public double getTrailerDistanceCost() throws Exception {
         return new CostCalc().getTrailerDistanceCost(this.getTrailerDistance());
     }

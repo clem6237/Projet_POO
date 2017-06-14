@@ -334,7 +334,7 @@ public class Version4 {
         
         //Récupérer le SwapLocation le plus proche du dépôt
         SwapLocation swap = new SwapLocation();
-        swap = swap.getNear(c1.getCoordinate());
+        swap = swap.getNearest(c1.getCoordinate());
         
         if(swap != null) {
             //Calcul du temps de trajet du Dépot au swap + time to park + aller au client et le servir

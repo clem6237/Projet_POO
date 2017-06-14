@@ -17,7 +17,7 @@ public class Utils {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
         
-        System.out.println(dateFormat.format(date) + " - " + message);
+        System.out.println(dateFormat.format(date) + " - (SB-VRP) "+ message);
     }
     
     /**

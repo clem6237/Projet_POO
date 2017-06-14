@@ -59,7 +59,7 @@ public class SwapLocation extends Location implements Serializable {
      * @param coordinate
      * @return 
      */
-    public SwapLocation getNear(Coordinate coordinate) {
+    public SwapLocation getNearest(Coordinate coordinate) {
         SwapLocationDao swapLocationManager = DaoFactory.getDaoFactory(PersistenceType.JPA).getSwapLocationDao();
         List<SwapLocation> list = (List<SwapLocation>)swapLocationManager.findAll();
         
