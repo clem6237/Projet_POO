@@ -159,7 +159,7 @@ public class Version5 {
                             
                     } else if(qty1Total > parameters.getBodyCapacity() && (tour.getLastTrailerQuantity() + customer.getOrderedQty()) <= parameters.getBodyCapacity() && !attached){                        
                         //Si il n'y a plus de place dans la remorque 1 et que l'on a pas de 2éme remorque
-                        if(canAddTrailer(tour, customer)) {
+                        if(canAddTrailer(tour, customer) && tour.getSwapLocation() == null) {
                             //Le camion devient un train
                             addTrailer(tour, customer);
                             iter.remove();
@@ -466,20 +466,32 @@ public class Version5 {
         return tpsTotal;
     }
     
-    /**
+     /**
      * Methode vérifie s'il on peut passer en mode camion
      * @param t le tour en cours
      * @param c le client à ajouter
-     * @return un boolean
+     * @return un boolean 
+     * @throws Exception 
      */
-    public boolean canAddTrailer(Tour t, Customer c) {
+    public boolean canAddTrailer(Tour t, Customer c) throws Exception {
         for(Route r : t.getListRoutes()) {
             if(r.getLocationType() == LocationType.CUSTOMER)
                 if(!((Customer) r.getLocation()).isAccessible())
                     return false;
         }
         
-        return c.isAccessible();
+        if(c.isAccessible()) {
+            CoordinatesCalc calc = new CoordinatesCalc();
+            
+            double tpsTotal = t.getTourTime()
+                + calc.getTimeBetweenCoord(t.getLastRoute().getLocation().getCoordinate(), c.getCoordinate())
+                + c.getServiceTime()
+                + calc.getTimeBetweenCoord(c.getCoordinate(), depot.getCoordinate());
+            
+            return (tpsTotal < parameters.getOperatingTime());
+        }
+        
+        return false;
     }
     
     /**

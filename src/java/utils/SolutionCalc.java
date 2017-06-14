@@ -117,7 +117,7 @@ public class SolutionCalc {
                             
                     } else if(qty1Total > parameters.getBodyCapacity() && (tour.getLastTrailerQuantity() + customer.getOrderedQty()) <= parameters.getBodyCapacity() && !attached){                        
                         //Si il n'y a plus de place dans la remorque 1 et que l'on a pas de 2éme remorque
-                        if(canAddTrailer(tour, customer)) {
+                        if(canAddTrailer(tour, customer) && tour.getSwapLocation() == null) {
                             //Le camion devient un train
                             addTrailer(tour, customer);
                             iter.remove();
@@ -170,6 +170,13 @@ public class SolutionCalc {
         Utils.log("Tournées créées");
     }
     
+    /**
+     * La méthode ordonne la liste pour avoir le client le plus proche les un des autres
+     * @param allCustomers
+     * @return la liste ordonnée
+     * @throws KeySizeException
+     * @throws KeyDuplicateException 
+     */
     public List<Customer> orderList(List<Customer> allCustomers) throws KeySizeException, KeyDuplicateException {
         CoordinatesCalc calc = new CoordinatesCalc(); 
         
@@ -197,14 +204,12 @@ public class SolutionCalc {
 
             double s[] = { sx, sy };
             nearCustomer = (Customer) kdTree.nearest(s);
-            System.out.println(nearCustomer.getId() + " : " + nearCustomer.getCoordinate().getCoordX() + " - " + nearCustomer.getCoordinate().getCoordY());
             
             list.add(nearCustomer);
             allCustomers.remove(nearCustomer);
             nearCustomer = null;
         }
         
-        System.out.println("List: "+list.size());
         return list;
     }
     
@@ -427,16 +432,28 @@ public class SolutionCalc {
      * Methode vérifie s'il on peut passer en mode camion
      * @param t le tour en cours
      * @param c le client à ajouter
-     * @return un boolean
+     * @return un boolean 
+     * @throws Exception 
      */
-    public boolean canAddTrailer(Tour t, Customer c) {
+    public boolean canAddTrailer(Tour t, Customer c) throws Exception {
         for(Route r : t.getListRoutes()) {
             if(r.getLocationType() == LocationType.CUSTOMER)
                 if(!((Customer) r.getLocation()).isAccessible())
                     return false;
         }
         
-        return c.isAccessible();
+        if(c.isAccessible()) {
+            CoordinatesCalc calc = new CoordinatesCalc();
+            
+            double tpsTotal = t.getTourTime()
+                + calc.getTimeBetweenCoord(t.getLastRoute().getLocation().getCoordinate(), c.getCoordinate())
+                + c.getServiceTime()
+                + calc.getTimeBetweenCoord(c.getCoordinate(), depot.getCoordinate());
+            
+            return (tpsTotal < parameters.getOperatingTime());
+        }
+        
+        return false;
     }
     
     /**
